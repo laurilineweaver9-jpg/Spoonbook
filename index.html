@@ -2012,62 +2012,79 @@ function removeImage(i) { pendingImages.splice(i,1); renderPreviews(); }
 
 // ── SAVE ─────────────────────────────────────────────
 function saveEntry() {
-  const entry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    spoons: selSpoons,
-    es: selES,
-    pain: selPain,
-    flare: selFlare,
-    o2: selO2,
-    sleepHours: document.getElementById('sleep-hours').value || null,
-    sleepQuality: selSleep,
-    mood: selMood,
-    bpSys: document.getElementById('bp-sys').value || null,
-    bpDia: document.getElementById('bp-dia').value || null,
-    weight: document.getElementById('weight').value || null,
-    hrv: document.getElementById('hrv').value || null,
-    spo2Avg: document.getElementById('spo2-avg').value || null,
-    spo2Low: document.getElementById('spo2-low').value || null,
-    sleepScore: document.getElementById('sleep-score').value || null,
-    cpapScore: document.getElementById('cpap-score').value || null,
-    cpapHours: document.getElementById('cpap-hours').value || null,
-    meds: Array.from(document.querySelectorAll('.chip-med.selected')).map(c=>c.textContent.trim()),
-    symptoms: Array.from(document.querySelectorAll('.chip-symptom.selected')).map(c=>c.textContent.trim()),
-    therapy: Array.from(document.querySelectorAll('.chip-therapy.selected')).map(c=>c.textContent.trim()),
-    factors: Array.from(document.querySelectorAll('.chip-factor.selected')).map(c=>c.textContent.trim()),
-    activity: Array.from(document.querySelectorAll('.chip-activity.selected')).map(c=>c.textContent.trim()),
-    note: document.getElementById('journal-note').value.trim(),
-    images: [...pendingImages]
-  };
-  const entries = getEntries();
-  entries.unshift(entry);
-  localStorage.setItem('lauriJournal', JSON.stringify(entries));
-  resetForm();
-  renderEntries();
-  const btn = document.getElementById('save-btn');
-  btn.textContent = '✓ Entry Saved'; btn.style.background = 'var(--sage)';
-  setTimeout(() => { btn.textContent = 'Save Today\'s Entry'; btn.style.background = ''; }, 2200);
+  try {
+    const entry = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      spoons: selSpoons,
+      es: selES,
+      pain: selPain,
+      flare: selFlare,
+      o2: selO2,
+      sleepHours: document.getElementById('sleep-hours').value || null,
+      sleepQuality: selSleep,
+      mood: selMood,
+      bpSys: document.getElementById('bp-sys').value || null,
+      bpDia: document.getElementById('bp-dia').value || null,
+      weight: document.getElementById('weight').value || null,
+      hrv: document.getElementById('hrv').value || null,
+      spo2Avg: document.getElementById('spo2-avg').value || null,
+      spo2Low: document.getElementById('spo2-low').value || null,
+      sleepScore: document.getElementById('sleep-score').value || null,
+      cpapScore: document.getElementById('cpap-score').value || null,
+      cpapHours: document.getElementById('cpap-hours').value || null,
+      meds: Array.from(document.querySelectorAll('.chip-med.selected')).map(c=>c.textContent.trim()),
+      symptoms: Array.from(document.querySelectorAll('.chip-symptom.selected')).map(c=>c.textContent.trim()),
+      therapy: Array.from(document.querySelectorAll('.chip-therapy.selected')).map(c=>c.textContent.trim()),
+      factors: Array.from(document.querySelectorAll('.chip-factor.selected')).map(c=>c.textContent.trim()),
+      activity: Array.from(document.querySelectorAll('.chip-activity.selected')).map(c=>c.textContent.trim()),
+      note: document.getElementById('journal-note').value.trim(),
+      images: pendingImages.map(img => ({ name: img.name, dataUrl: img.dataUrl }))
+    };
 
-  // Auto-sync and daily insight — non-blocking, won't affect save
-  setTimeout(() => { syncToCloud().catch(e => console.error(e)); }, 500);
-  setTimeout(() => { getDailyInsight(entry).catch(e => console.error(e)); }, 1000);
+    // Save to localStorage
+    const existing = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
+    existing.unshift(entry);
+    localStorage.setItem('lauriJournal', JSON.stringify(existing));
+
+    // Flash button
+    const btn = document.getElementById('save-btn');
+    btn.textContent = '✓ Saved!';
+    btn.style.background = 'var(--sage)';
+    setTimeout(() => { btn.textContent = 'Save Today\'s Entry'; btn.style.background = ''; }, 2000);
+
+    // Reset and render
+    resetForm();
+    renderEntries();
+
+    // Sync in background — completely separate, cannot affect save
+    window.setTimeout(function() {
+      try { syncToCloud(); } catch(e) { console.error(e); }
+    }, 2000);
+
+  } catch(err) {
+    alert('Save error: ' + err.message);
+    console.error('Save error:', err);
+  }
 }
 
 function resetForm() {
-  selES=null; selPain=null; selFlare=null; selO2=null; selSleep=null; selMood=null; selSpoons=null; pendingImages=[];
-  document.querySelectorAll('.spoon-btn').forEach(b => b.className='spoon-btn');
-  document.getElementById('spoon-label').textContent='Tap a spoon to set your count for today.';
-  document.querySelectorAll('.es-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
-  ['flare-yes','flare-no','o2-yes','o2-no'].forEach(id => document.getElementById(id).className='radio-opt');
-  document.querySelectorAll('.sleep-face').forEach(f => f.classList.remove('selected'));
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('journal-note').value = '';
-  document.getElementById('img-previews').innerHTML = '';
-  document.getElementById('es-label').textContent = '';
+  selES=null; selPain=null; selFlare=null; selO2=null; selSleep=null; selMood=null; selSpoons=null;
+  pendingImages=[];
+  try {
+    document.querySelectorAll('.spoon-btn').forEach(b => b.className='spoon-btn');
+    document.getElementById('spoon-label').textContent='Tap a spoon to set your count for today.';
+    document.querySelectorAll('.es-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+    ['flare-yes','flare-no','o2-yes','o2-no'].forEach(id => { const el = document.getElementById(id); if(el) el.className='radio-opt'; });
+    document.querySelectorAll('.sleep-face').forEach(f => f.classList.remove('selected'));
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    const note = document.getElementById('journal-note'); if(note) note.value='';
+    const prev = document.getElementById('img-previews'); if(prev) prev.innerHTML='';
+    const esLbl = document.getElementById('es-label'); if(esLbl) esLbl.textContent='';
+  } catch(e) { console.error('Reset error:', e); }
 }
 
 // ── RENDER ENTRIES ───────────────────────────────────
@@ -2076,44 +2093,50 @@ function getEntries() { try { return JSON.parse(localStorage.getItem('lauriJourn
 function renderEntries() {
   const entries = getEntries();
   const list = document.getElementById('entries-list');
+  if (!list) return;
   if (!entries.length) { list.innerHTML='<div class="no-entries">No entries yet.</div>'; return; }
-  list.innerHTML = entries.map(e => {
-    const d = new Date(e.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    const spoonBadge = e.spoons ? `<span style="display:inline-block;background:var(--teal-light);color:var(--teal);font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">🥄 ${e.spoons} spoon${e.spoons>1?'s':''}</span>` : '';
-    const esColor = e.es ? ES_COLORS[e.es] : '#9A90BC';
-    const esBadge = e.es ? `<span style="display:inline-block;background:${esColor};color:white;font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">Scale ${e.es}</span>` : '';
-    const esText = e.es ? `<span style="font-size:0.78rem;color:var(--text-soft);vertical-align:middle">${ES_LABELS[e.es]}</span>` : '';
-    const painBadge = e.pain != null ? `<span style="display:inline-block;background:var(--terracotta-light);color:var(--terracotta);font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:4px">Pain ${e.pain}/10</span>` : '';
-    const vitals = [];
-    if (e.bpSys && e.bpDia) vitals.push(`<span class="vital-tag">BP <strong>${e.bpSys}/${e.bpDia}</strong></span>`);
-    if (e.hrv) vitals.push(`<span class="vital-tag">HRV <strong>${e.hrv}ms</strong></span>`);
-    if (e.spo2Avg) { const col=e.spo2Avg<90?'var(--red)':e.spo2Avg<94?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ avg <strong style="color:${col}">${e.spo2Avg}%</strong></span>`); }
-    if (e.spo2Low) { const col=e.spo2Low<88?'var(--red)':e.spo2Low<92?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ low <strong style="color:${col}">${e.spo2Low}%</strong></span>`); }
-    if (e.sleepScore) vitals.push(`<span class="vital-tag">Sleep Score <strong>${e.sleepScore}</strong></span>`);
-    if (e.cpapScore) vitals.push(`<span class="vital-tag">CPAP Score <strong>${e.cpapScore}</strong></span>`);
-    if (e.cpapHours) vitals.push(`<span class="vital-tag">CPAP <strong>${e.cpapHours}h</strong></span>`);
-    if (e.weight) vitals.push(`<span class="vital-tag">Wt <strong>${e.weight}lbs</strong></span>`);
-    if (e.sleepHours) vitals.push(`<span class="vital-tag">Sleep <strong>${e.sleepHours}h</strong></span>`);
-    if (e.o2==='yes') vitals.push(`<span class="vital-tag o2-tag">🫁 On O₂</span>`);
-    const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
-    const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
-    const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
-    const facChips = (e.factors||[]).map(s=>`<span class="entry-chip ec-factor">${s}</span>`).join('');
-    const actChips = (e.activity||[]).map(s=>`<span class="entry-chip ec-activity">${s}</span>`).join('');
-    const imgs = (e.images||[]).map(img=>`<img src="${img.dataUrl}" onclick="openLightbox('${img.dataUrl.replace(/'/g,"\\'")}'">`).join('');
-    return `<div class="entry-card ${e.flare==='yes'?'entry-flare':''}">
-      <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
-      ${e.flare==='yes'?'<div class="entry-flare-badge">🔥 FLARE</div>':''}
-      <div class="entry-date">${d}</div>
-      <div style="margin-bottom:4px">${spoonBadge}${esBadge}${esText}${painBadge}</div>
-      ${e.mood?`<div style="font-size:0.82rem;color:var(--lavender);margin-bottom:4px">${e.mood}</div>`:''}
-      ${e.sleepQuality?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.sleepQuality.emoji} Sleep: ${e.sleepQuality.label}</div>`:''}
-      ${vitals.length?`<div class="entry-vitals">${vitals.join('')}</div>`:''}
-      ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
-      ${e.note?`<div class="entry-note">${e.note}</div>`:''}
-      ${imgs?`<div class="entry-images">${imgs}</div>`:''}
-    </div>`;
-  }).join('');
+  try {
+    list.innerHTML = entries.map(e => {
+      const d = new Date(e.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const spoonBadge = e.spoons ? `<span style="display:inline-block;background:var(--teal-light);color:var(--teal);font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">🥄 ${e.spoons} spoon${e.spoons>1?'s':''}</span>` : '';
+      const esColor = e.es ? ES_COLORS[e.es] : '#9A90BC';
+      const esBadge = e.es ? `<span style="display:inline-block;background:${esColor};color:white;font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">Scale ${e.es}</span>` : '';
+      const esText = e.es ? `<span style="font-size:0.78rem;color:var(--text-soft);vertical-align:middle">${ES_LABELS[e.es]||''}</span>` : '';
+      const painBadge = e.pain != null ? `<span style="display:inline-block;background:var(--terracotta-light);color:var(--terracotta);font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:4px">Pain ${e.pain}/10</span>` : '';
+      const vitals = [];
+      if (e.bpSys && e.bpDia) vitals.push(`<span class="vital-tag">BP <strong>${e.bpSys}/${e.bpDia}</strong></span>`);
+      if (e.hrv) vitals.push(`<span class="vital-tag">HRV <strong>${e.hrv}ms</strong></span>`);
+      if (e.spo2Avg) { const col=e.spo2Avg<90?'var(--red)':e.spo2Avg<94?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ avg <strong style="color:${col}">${e.spo2Avg}%</strong></span>`); }
+      if (e.spo2Low) { const col=e.spo2Low<88?'var(--red)':e.spo2Low<92?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ low <strong style="color:${col}">${e.spo2Low}%</strong></span>`); }
+      if (e.sleepScore) vitals.push(`<span class="vital-tag">Sleep Score <strong>${e.sleepScore}</strong></span>`);
+      if (e.cpapScore) vitals.push(`<span class="vital-tag">CPAP Score <strong>${e.cpapScore}</strong></span>`);
+      if (e.cpapHours) vitals.push(`<span class="vital-tag">CPAP <strong>${e.cpapHours}h</strong></span>`);
+      if (e.weight) vitals.push(`<span class="vital-tag">Wt <strong>${e.weight}lbs</strong></span>`);
+      if (e.sleepHours) vitals.push(`<span class="vital-tag">Sleep <strong>${e.sleepHours}h</strong></span>`);
+      if (e.o2==='yes') vitals.push(`<span class="vital-tag o2-tag">🫁 On O₂</span>`);
+      const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
+      const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
+      const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
+      const facChips = (e.factors||[]).map(s=>`<span class="entry-chip ec-factor">${s}</span>`).join('');
+      const actChips = (e.activity||[]).map(s=>`<span class="entry-chip ec-activity">${s}</span>`).join('');
+      const imgs = (e.images||[]).filter(img=>img&&img.dataUrl).map(img=>`<img src="${img.dataUrl}" onclick="openLightbox('${img.dataUrl.replace(/'/g,"\\'")}')">`).join('');
+      return `<div class="entry-card ${e.flare==='yes'?'entry-flare':''}">
+        <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
+        ${e.flare==='yes'?'<div class="entry-flare-badge">🔥 FLARE</div>':''}
+        <div class="entry-date">${d}</div>
+        <div style="margin-bottom:4px">${spoonBadge}${esBadge}${esText}${painBadge}</div>
+        ${e.mood?`<div style="font-size:0.82rem;color:var(--lavender);margin-bottom:4px">${e.mood}</div>`:''}
+        ${e.sleepQuality?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.sleepQuality.emoji||''} Sleep: ${e.sleepQuality.label||''}</div>`:''}
+        ${vitals.length?`<div class="entry-vitals">${vitals.join('')}</div>`:''}
+        ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
+        ${e.note?`<div class="entry-note">${e.note}</div>`:''}
+        ${imgs?`<div class="entry-images">${imgs}</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(err) {
+    console.error('Render error:', err);
+    list.innerHTML = '<div class="no-entries">Error displaying entries: ' + err.message + '</div>';
+  }
 }
 
 function deleteEntry(id) {
