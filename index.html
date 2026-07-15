@@ -2382,7 +2382,7 @@ function openLightboxWithCaption(src, caption) {
   document.getElementById('lightbox').classList.add('open');
 }
 
-// ── SUPABASE SYNC ─────────────────────────────────────
+// ── SUPABASE SYNC (direct from browser) ───────────────
 
 const SUPABASE_URL = 'https://niwpjhbzjvbbxkdgoltg.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_2i_bdmtOdJ9ia9UpWE9Vug_yGNP5LjN';
@@ -2392,25 +2392,69 @@ function setSyncStatus(msg, color) {
   if (el) { el.textContent = msg; el.style.color = color || 'var(--text-soft)'; }
 }
 
+function supabaseHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON,
+    'Authorization': 'Bearer ' + SUPABASE_ANON,
+    'Prefer': 'resolution=merge-duplicates'
+  };
+}
+
 async function syncToCloud() {
   const btn = document.getElementById('cloud-btn');
   btn.textContent = '☁️ Syncing…'; btn.disabled = true;
   setSyncStatus('Syncing to cloud…', 'var(--teal)');
   try {
     const entries = getEntries();
-    const res = await fetch('/.netlify/functions/sync?action=entries', {
+    if (!entries.length) {
+      setSyncStatus('No entries to sync', 'var(--text-soft)');
+      btn.textContent = '☁️ Sync'; btn.disabled = false;
+      return;
+    }
+    const rows = entries.map(e => ({
+      id: e.id,
+      date: e.date,
+      spoons: e.spoons || null,
+      es: e.es || null,
+      pain: e.pain || null,
+      flare: e.flare || null,
+      o2: e.o2 || null,
+      sleep_hours: e.sleepHours ? parseFloat(e.sleepHours) : null,
+      sleep_score: e.sleepScore ? parseInt(e.sleepScore) : null,
+      sleep_quality: e.sleepQuality || null,
+      cpap_hours: e.cpapHours ? parseFloat(e.cpapHours) : null,
+      cpap_score: e.cpapScore ? parseInt(e.cpapScore) : null,
+      mood: e.mood || null,
+      bp_sys: e.bpSys ? parseInt(e.bpSys) : null,
+      bp_dia: e.bpDia ? parseInt(e.bpDia) : null,
+      hrv: e.hrv ? parseInt(e.hrv) : null,
+      spo2_avg: e.spo2Avg ? parseInt(e.spo2Avg) : null,
+      spo2_low: e.spo2Low ? parseInt(e.spo2Low) : null,
+      weight: e.weight ? parseFloat(e.weight) : null,
+      meds: e.meds || [],
+      symptoms: e.symptoms || [],
+      therapy: e.therapy || [],
+      factors: e.factors || [],
+      activity: e.activity || [],
+      note: e.note || null,
+      images: (e.images || []).map(img => ({ name: img.name }))
+    }));
+
+    const res = await fetch(SUPABASE_URL + '/rest/v1/journal_entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries })
+      headers: supabaseHeaders(),
+      body: JSON.stringify(rows)
     });
-    const data = await res.json();
-    if (data.ok) {
-      setSyncStatus(`✓ Synced ${data.synced || entries.length} entries · ${new Date().toLocaleTimeString()}`, 'var(--sage)');
+
+    if (res.ok || res.status === 201) {
+      setSyncStatus('✓ Synced ' + entries.length + ' entries · ' + new Date().toLocaleTimeString(), 'var(--sage)');
     } else {
-      throw new Error(data.error);
+      const err = await res.text();
+      throw new Error(err);
     }
   } catch (err) {
-    setSyncStatus('⚠ Sync failed — check connection', 'var(--terracotta)');
+    setSyncStatus('⚠ Sync failed — ' + err.message, 'var(--terracotta)');
     console.error('Sync error:', err);
   }
   btn.textContent = '☁️ Sync'; btn.disabled = false;
@@ -2418,19 +2462,20 @@ async function syncToCloud() {
 
 async function syncFromCloud() {
   try {
-    const res = await fetch('/.netlify/functions/sync?action=entries');
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/journal_entries?order=date.desc&limit=500',
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+    );
     if (!res.ok) return;
     const cloudEntries = await res.json();
-    if (!cloudEntries?.length) return;
+    if (!cloudEntries || !cloudEntries.length) return;
 
     const local = getEntries();
     const localIds = new Set(local.map(e => String(e.id)));
     let added = 0;
 
-    // Merge: cloud entries not in local
     for (const ce of cloudEntries) {
       if (!localIds.has(String(ce.id))) {
-        // Convert from DB format back to app format
         local.push({
           id: ce.id,
           date: ce.date,
@@ -2457,7 +2502,7 @@ async function syncFromCloud() {
           factors: ce.factors || [],
           activity: ce.activity || [],
           note: ce.note,
-          images: [] // images stored locally only
+          images: []
         });
         added++;
       }
@@ -2467,7 +2512,7 @@ async function syncFromCloud() {
       local.sort((a, b) => new Date(b.date) - new Date(a.date));
       localStorage.setItem('lauriJournal', JSON.stringify(local));
       renderEntries();
-      setSyncStatus(`☁️ Pulled ${added} entries from cloud`, 'var(--teal)');
+      setSyncStatus('☁️ Pulled ' + added + ' entries from cloud', 'var(--teal)');
     }
   } catch (err) {
     console.error('Pull error:', err);
