@@ -2398,7 +2398,7 @@ async function syncToCloud() {
   setSyncStatus('Syncing to cloud…', 'var(--teal)');
   try {
     const entries = getEntries();
-    const res = await fetch('/api/sync?action=entries', {
+    const res = await fetch('/.netlify/functions/sync?action=entries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ entries })
@@ -2418,7 +2418,7 @@ async function syncToCloud() {
 
 async function syncFromCloud() {
   try {
-    const res = await fetch('/api/sync?action=entries');
+    const res = await fetch('/.netlify/functions/sync?action=entries');
     if (!res.ok) return;
     const cloudEntries = await res.json();
     if (!cloudEntries?.length) return;
@@ -2507,7 +2507,7 @@ async function runWeeklySummary() {
   setAIBtnsDisabled(true);
   showAIResult('📊 Weekly Summary', '✨ Generating your weekly summary…');
   try {
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('/.netlify/functions/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'weekly', entries: entries.slice(0, 20) })
@@ -2529,7 +2529,7 @@ async function runCorrelations() {
   setAIBtnsDisabled(true);
   showAIResult('🔍 Correlations', '✨ Analyzing your patterns…');
   try {
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('/.netlify/functions/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'correlations', entries })
@@ -2559,7 +2559,7 @@ async function runProviderReport() {
   setAIBtnsDisabled(true);
   showAIResult('📋 Provider Report', `✨ Generating ${specialty} report for the last ${days} days…`);
   try {
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('/.netlify/functions/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2583,7 +2583,7 @@ async function runProviderReport() {
 async function getDailyInsight(entry) {
   try {
     const entries = getEntries();
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('/.netlify/functions/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'daily', entries: [entry, ...entries.slice(0, 6)] })
