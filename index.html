@@ -1,230 +1,2655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Spoonbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --terracotta: #C97567;
+  --terracotta-light: #f5e0db;
+  --lavender: #9A90BC;
+  --lavender-light: #eceaf7;
+  --sage: #5E8C6A;
+  --sage-light: #d6eadb;
+  --teal: #6FAFA9;
+  --teal-light: #d4eceb;
+  --navy: #203A55;
+  --navy-light: #d0dae4;
+  --gold: #D8A84A;
+  --gold-light: #f7e8c4;
+  --cream: #faf8f5;
+  --warm-white: #fffdf9;
+  --text: #1e1e2e;
+  --text-soft: #5a5470;
+  --border: #e2ddf0;
+  --red: #b85252;
+  --red-light: #fadadd;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--text); min-height: 100vh; }
 
-The Spoonbook
-TRACK IT. GET IT. OWN IT.
-Spoons are data. You are more. 🤍
+/* HEADER */
+.header {
+  background: var(--navy);
+  padding: 20px 20px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 15% 50%, rgba(201,117,103,0.2) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 50%, rgba(111,175,169,0.18) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 100%, rgba(154,144,188,0.12) 0%, transparent 60%);
+}
+.header-content { position: relative; z-index: 1; }
 
-JOURNAL
-SCALE
-EMERGENCY
-MEDS
-CONDITIONS
-SYSTEMS
-PHOTOS
-COMFORT
-🥄
-TODAY'S SPOONBOOK WISDOM
-SPOON METER — HOW MANY SPOONS DO YOU HAVE TODAY? 🥄 🥄 🥄 🥄 🥄 🥄 🥄 🥄 🥄 🥄 🥄 🥄
-Tap a spoon to set your count for today.
-🌡️
-THE ESCALATING EXISTENTIAL SCALE
-How are you, really?
-1
-🌈 Utopia
-2
-✨ Sparkly
-3
-😊 Okay
-4
-😐 Meh
-5
-☕ Caffeine
-6
-🫠 Questionable
-7
-🌧️ Wobbling
-8
-🚨 Dumpster
-9
-💀 Clusterfuck
-10
-🖕 Fuck
+/* Spoon SVG decoration */
+.header-spoon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.spoon-svg { width: 28px; height: 28px; opacity: 0.7; }
+.spoon-svg.left { transform: scaleX(-1) rotate(-15deg); }
+.spoon-svg.right { transform: rotate(15deg); }
 
-😣
-PAIN SCALE — WONG BAKER FACES
-What's your pain level right now?
-😄
-1
-🙂
-2
-😐
-3
-😕
-4
-😟
-5
-😣
-6
-😫
-7
-😢
-8
-😭
-9
-🤯
-10
-🔥
-FLARE?
-Is your body in active flare today?
-🔥 Yes — Active Flare ✓ No Flare
-🫁
-WEARING OXYGEN?
-Are you on supplemental O₂ today?
-🫁 Yes — On O₂ ✓ Not Today
-📍 Loading local weather…
-📊
-BODY INFO
-Vitals grouped by system — fill in what you have.
-🌙 SLEEP
-HOURS SLEPT
+.header-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  margin-bottom: 3px;
+}
+.header-tagline-main {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 5px;
+}
+.header-tagline-sub {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: rgba(216,168,74,0.6);
+  letter-spacing: 0.04em;
+}
 
-SLEEP SCORE
+/* Daily wit banner */
+.wit-banner {
+  background: linear-gradient(135deg, rgba(111,175,169,0.12), rgba(154,144,188,0.1));
+  border: 1px solid rgba(216,168,74,0.25);
+  border-radius: 10px;
+  padding: 9px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wit-icon { font-size: 1.2rem; flex-shrink: 0; }
+.wit-text { font-size: 0.82rem; color: var(--text-soft); font-style: italic; line-height: 1.4; }
+.wit-text strong { color: var(--navy); font-style: normal; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; display: block; margin-bottom: 2px; }
 
-SLEEP QUALITY
-😴
-😊
-😐
-😕
-😩
-🚫
-😮‍💨 CPAP
-CPAP HOURS
+/* Spoon meter */
+.spoon-meter-block {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 11px;
+}
+.spoon-meter-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.spoon-meter-title::before { content: '🥄'; font-size: 0.9rem; }
+.spoon-row {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.spoon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.spoon-btn:hover { transform: scale(1.12); border-color: var(--teal); }
+.spoon-btn.spoon-active { background: var(--teal-light); border-color: var(--teal); }
+.spoon-btn.spoon-used { background: var(--terracotta-light); border-color: var(--terracotta); opacity: 0.5; }
+.spoon-count-label {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin-top: 4px;
+}
+.spoon-count-label strong { color: var(--teal); font-size: 1rem; }
 
-CPAP SCORE
+/* NAV */
+.nav { display: flex; background: var(--navy); border-top: 1px solid rgba(255,255,255,0.08); overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { flex: 1; min-width: 72px; padding: 11px 6px; background: none; border: none; color: rgba(216,168,74,0.5); font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; white-space: nowrap; }
+.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.nav-btn:hover { color: var(--gold-light); }
 
-🫁 OXYGEN
-SPO₂ AVG (%)
+/* SECTIONS */
+.section { display: none; padding: 16px 14px 48px; max-width: 640px; margin: 0 auto; }
+.section.active { display: block; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--navy); margin-bottom: 4px; }
+.section-subtitle { font-size: 0.83rem; color: var(--text-soft); margin-bottom: 18px; line-height: 1.5; }
 
-LOWEST SPO₂ (%)
+/* ── JOURNAL CARD AESTHETIC ─────────────────────────── */
+.jblock { background: white; border: 1px solid #e8e4f0; border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(32,58,85,0.06), 0 1px 3px rgba(32,58,85,0.04); }
+.jblock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+.jblock-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.icon-teal { background: var(--teal-light); } .icon-lavender { background: var(--lavender-light); } .icon-sage { background: var(--sage-light); } .icon-gold { background: var(--gold-light); } .icon-terracotta { background: var(--terracotta-light); } .icon-navy { background: var(--navy-light); }
+.jblock-title { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--navy); margin-bottom: 0; }
+.jblock-subtitle { font-size: 0.75rem; color: var(--text-soft); margin-bottom: 12px; margin-top: 1px; padding-left: 44px; }
 
-❤️ HEART
-BLOOD PRESSURE
+/* Existential Scale */
+.es-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
+.es-btn { border: 1.5px solid var(--border); border-radius: 12px; background: #fafafa; padding: 8px 3px 6px; cursor: pointer; text-align: center; font-size: 0.65rem; color: var(--text-soft); font-family: 'DM Sans', sans-serif; transition: all 0.15s; line-height: 1.3; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.es-btn .es-num { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; display: block; margin-bottom: 2px; }
+.es-btn .es-emoji { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+.es-btn:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.es-btn.selected { border-width: 2px; color: white; }
+.es-1.selected { background:#9A90BC; border-color:#9A90BC; }
+.es-2.selected { background:#6FAFA9; border-color:#6FAFA9; }
+.es-3.selected { background:#5E8C6A; border-color:#5E8C6A; }
+.es-4.selected { background:#7a9e8e; border-color:#7a9e8e; }
+.es-5.selected { background:#D8A84A; border-color:#D8A84A; }
+.es-6.selected { background:#d4884a; border-color:#d4884a; }
+.es-7.selected { background:#C97567; border-color:#C97567; }
+.es-8.selected { background:#c47a7a; border-color:#c47a7a; }
+.es-9.selected { background:#b85252; border-color:#b85252; }
+.es-10.selected { background:#203A55; border-color:#203A55; }
+.es-label { margin-top: 10px; font-size: 0.84rem; color: var(--text-soft); min-height: 20px; text-align: center; font-style: italic; background: var(--cream); border-radius: 8px; padding: 6px 10px; font-family: 'Playfair Display', serif; }
 
-/
+/* Pain scale */
+.pain-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 5px; }
+.pain-btn { border: 1.5px solid var(--border); border-radius: 12px; background: #fafafa; padding: 8px 3px; cursor: pointer; text-align: center; font-size: 0.68rem; color: var(--text-soft); font-family: 'DM Sans', sans-serif; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.pain-btn .pain-face { font-size: 1.5rem; display: block; margin-bottom: 3px; }
+.pain-btn .pain-num { font-weight: 700; display: block; }
+.pain-btn:hover { border-color: var(--terracotta); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+.pain-btn.selected { border-color: var(--terracotta); background: var(--terracotta-light); color: var(--terracotta); border-width: 2px; }
 
-HRV AVG (MS)
+/* Radio rows */
+.radio-row { display: flex; gap: 8px; }
+.radio-opt { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 10px; border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; font-size: 0.86rem; font-weight: 600; color: var(--text-soft); background: #fafafa; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.radio-opt:hover { border-color: var(--teal); background: var(--teal-light); }
+.radio-opt.selected-yes { border-color: var(--terracotta); background: var(--terracotta-light); color: var(--terracotta); }
+.radio-opt.selected-no { border-color: var(--sage); background: var(--sage-light); color: var(--sage); }
 
-⚖️ BODY
-WEIGHT (LBS)
+/* Weather */
+.weather-box { background: linear-gradient(135deg, #e8f6f5, #ece8f7); border: 1px solid rgba(111,175,169,0.3); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(32,58,85,0.06); }
+.weather-loading { text-align:center; color: var(--text-soft); font-size: 0.84rem; padding: 10px; }
+.weather-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.weather-item { text-align: center; background: white; border-radius: 10px; padding: 8px 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+.weather-val { font-size: 1rem; font-weight: 700; color: var(--navy); }
+.weather-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); margin-top: 1px; }
+.weather-icon { font-size: 1.3rem; margin-bottom: 2px; }
 
-💭 MOOD
-🌈 Joyful
-😊 Happy
-🙂 Content
-😌 Calm
-😐 Neutral
-😕 Frustrated
-😞 Down
-😢 Overwhelmed
-😫 Despair Goblin
-🖕 Fuck Everything
-💊
-MEDICATIONS TAKEN TODAY
-PRN and as-needed meds used today.
-Zepbound
-Cimzia
-Tylenol
-Muscle Relaxer
-Tramadol
-Tums
-Zofran
-📋
-SYMPTOMS
-What's showing up today?
-Balance Issues
-Breathlessness
-Burning Eyes
-Congestion
-Difficulty Hearing
-Eye Pain
-Facial Swelling
-Fatigue
-Headache
-Joint Pain
-Left Ear
-Mobility
-Muscle Pain
-Nausea
-Nose
-Pre-Syncope
-Rib Pain
-Right Ear
-Sensitive Skin
-Sleep Issues
-Sternum Pain
-Stiffness
-Syncope
-Tinnitus
-🌿
-THERAPY
-What supported your body today?
-Aromatherapy
-Bath
-CBT
-Cold Therapy
-Compression
-CPAP Worn
-Cryotherapy
-Heat
-Infrared Sauna
-Journaling
-Massage
-Meditation
-Physical Therapy
-Temazcal
-🦯 ASSISTIVE DEVICES USED TODAY
-Air Cast
-Boot
-Cane
-Grabber
-Knee Scooter
-Walker
-Wheelchair
-🔍
-FACTORS
-What might be impacting you today?
-Alcohol
-Day Off
-Emotional Stress
-House Cleaning
-Late Bedtime
-Poor Sleep
-Shopping
-Shower
-Social
-Travel
-Trouble Falling Asleep
-Trouble Staying Asleep
-Vivid Dreams
-Woke Early
-Woke Tired
-Yard Work
-⚡
-ACTIVITY
-Movement wins — big or tiny.
-5k Steps
-10k Steps
-Peloton
-Pilates
-Stretching
-Yoga
-📷
-PHOTOS
-Document swelling, rashes, or anything visual.
-📷
-Tap to add photos · JPG or PNG
-✏️
-TODAY'S NOTES
-Anything on your mind? Write freely.
-Save Today's Entry
+/* Body group labels */
+.body-group-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  background: var(--cream);
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
 
-🤖 AI ANALYSIS TOOLS
-📊 Weekly Summary
-Trends, patterns & insights from the past 7 days
-🔍 Find Correlations
-What factors make your days better or worse?
-📋 Generate Provider Report
-Clinical summary ready for your care team
-Past Entries
-☁️ Sync
-Export
-No entries yet.
+/* Body info */
+.body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.body-field { display: flex; flex-direction: column; gap: 4px; }
+.body-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+.body-input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; color: var(--navy); background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s; -moz-appearance: textfield; width: 100%; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
+.body-input::-webkit-outer-spin-button, .body-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.body-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(111,175,169,0.15); background: white; }
+.bp-row { display: flex; gap: 6px; align-items: center; }
+.bp-sep { color: var(--text-soft); font-weight: 700; font-size: 1.2rem; }
+
+/* Sleep faces */
+.sleep-faces { display: flex; gap: 8px; flex-wrap: wrap; }
+.sleep-face { border: 1.5px solid var(--border); border-radius: 14px; background: #fafafa; padding: 8px 12px; cursor: pointer; font-size: 1.4rem; transition: all 0.15s; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); line-height: 1; }
+.sleep-face:hover { border-color: var(--lavender); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.sleep-face.selected { border-color: var(--lavender); background: var(--lavender-light); border-width: 2px; transform: scale(1.05); }
+
+/* Mood */
+.mood-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+.mood-btn { border: 1.5px solid var(--border); border-radius: 20px; background: #fafafa; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; color: var(--text-soft); font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.mood-btn:hover { border-color: var(--lavender); background: var(--lavender-light); transform: translateY(-1px); }
+.mood-btn.selected { background: var(--lavender-light); border-color: var(--lavender); color: var(--lavender); font-weight: 600; border-width: 2px; }
+
+/* Chips */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { padding: 6px 13px; border-radius: 20px; border: 1.5px solid var(--border); background: #fafafa; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-soft); user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.chip:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+.chip-med.selected { background: var(--gold-light); border-color: var(--gold); color: #7a5a10; font-weight: 600; }
+.chip-symptom.selected { background: var(--terracotta-light); border-color: var(--terracotta); color: var(--terracotta); font-weight: 600; }
+.chip-therapy.selected { background: var(--teal-light); border-color: var(--teal); color: #2e6b66; font-weight: 600; }
+.chip-factor.selected { background: var(--lavender-light); border-color: var(--lavender); color: #4a3d8a; font-weight: 600; }
+.chip-activity.selected { background: var(--sage-light); border-color: var(--sage); color: #2e5c38; font-weight: 600; }
+
+/* Textarea */
+.j-textarea { width: 100%; min-height: 90px; border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); background: #fafafa; resize: vertical; outline: none; transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.6; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
+.j-textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(111,175,169,0.15); background: white; }
+.j-textarea::placeholder { color: #b8b0cc; }
+.inline-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--text); background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
+.inline-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(216,168,74,0.15); background: white; }
+.inline-input::placeholder { color: #b8b0cc; }
+
+/* Image upload */
+.img-upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa; }
+.img-upload-area:hover { border-color: var(--teal); background: var(--teal-light); }
+.img-upload-area p { font-size: 0.8rem; color: var(--text-soft); margin-top: 4px; }
+#img-input { display: none; }
+.img-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.img-preview-wrap { position: relative; width: 68px; height: 68px; }
+.img-preview-wrap img { width: 68px; height: 68px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.img-remove { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: white; border: none; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* Save button */
+.save-btn { width: 100%; background: linear-gradient(135deg, var(--navy), #2a4a6a); color: var(--gold-light); border: none; border-radius: 14px; padding: 15px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; margin-top: 4px; box-shadow: 0 4px 14px rgba(32,58,85,0.25); }
+.save-btn:hover { background: linear-gradient(135deg, var(--teal), #4a9f99); box-shadow: 0 6px 18px rgba(111,175,169,0.35); transform: translateY(-1px); }
+
+/* Past entries */
+.entries-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--navy); margin: 22px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+.entries-title button { font-size: 0.72rem; font-family: 'DM Sans', sans-serif; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; cursor: pointer; color: var(--text-soft); }
+.entry-card { background: white; border: 1px solid #e8e4f0; border-radius: 14px; padding: 14px; margin-bottom: 10px; position: relative; box-shadow: 0 2px 8px rgba(32,58,85,0.05); }
+.entry-card.entry-flare { border-color: var(--red); background: #fff8f8; }
+.entry-flare-badge { display: inline-block; background: var(--red); color: white; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.05em; margin-bottom: 5px; }
+.entry-date { font-size: 0.74rem; color: var(--text-soft); margin-bottom: 5px; font-weight: 500; }
+.entry-chips-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 5px 0; }
+.entry-chip { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.ec-symptom { background: var(--terracotta-light); color: var(--terracotta); }
+.ec-therapy { background: var(--teal-light); color: var(--teal); }
+.ec-factor { background: var(--lavender-light); color: var(--lavender); }
+.ec-activity { background: var(--sage-light); color: var(--sage); }
+.ec-med { background: var(--gold-light); color: #7a5a10; }
+.entry-note { font-size: 0.83rem; color: var(--text-soft); line-height: 1.5; margin-top: 5px; white-space: pre-wrap; }
+.entry-images { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.entry-images img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+.entry-delete { position: absolute; top: 9px; right: 9px; background: none; border: none; color: #ccc; font-size: 0.95rem; cursor: pointer; padding: 3px; line-height: 1; }
+.entry-delete:hover { color: var(--red); }
+.no-entries { text-align: center; color: var(--text-soft); font-size: 0.86rem; padding: 28px 0; font-style: italic; }
+.entry-vitals { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
+.vital-tag { font-size: 0.74rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; padding: 2px 7px; color: var(--text-soft); }
+.vital-tag strong { color: var(--navy); }
+.o2-tag { background: var(--teal-light); border-color: var(--teal); color: var(--teal); font-weight: 600; }
+
+/* ── SCALE TAB ────────────────────────────────────── */
+.scale-card { border-radius: 12px; margin-bottom: 12px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+.scale-header { display: flex; align-items: center; padding: 12px 14px; cursor: pointer; gap: 12px; }
+.scale-num { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; flex-shrink: 0; color: white; }
+.scale-title-block { flex: 1; }
+.scale-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; margin-bottom: 1px; }
+.scale-tagline { font-size: 0.78rem; opacity: 0.8; }
+.scale-chevron { font-size: 1rem; opacity: 0.45; transition: transform 0.3s; }
+.scale-card.open .scale-chevron { transform: rotate(180deg); }
+.scale-body { display: none; padding: 0 14px 13px; border-top: 1px solid rgba(0,0,0,0.06); }
+.scale-card.open .scale-body { display: block; }
+.care-section { margin-top: 11px; }
+.care-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: 5px; }
+.care-items { list-style: none; }
+.care-items li { display: flex; align-items: flex-start; gap: 7px; padding: 4px 0; font-size: 0.85rem; line-height: 1.5; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.care-items li:last-child { border-bottom: none; }
+.care-items li::before { content: '•'; font-size: 1.1rem; line-height: 1.2; flex-shrink: 0; }
+
+.lvl-1 .scale-header { background: var(--lavender-light); } .lvl-1 .scale-num { background: var(--lavender); } .lvl-1 .scale-name { color: var(--lavender); } .lvl-1 .care-items li::before { color: var(--lavender); } .lvl-1 .scale-body { background: #f7f5ff; }
+.lvl-2 .scale-header { background: var(--teal-light); } .lvl-2 .scale-num { background: var(--teal); } .lvl-2 .scale-name { color: #2e6b66; } .lvl-2 .care-items li::before { color: var(--teal); } .lvl-2 .scale-body { background: #f2fafa; }
+.lvl-3 .scale-header { background: var(--sage-light); } .lvl-3 .scale-num { background: var(--sage); } .lvl-3 .scale-name { color: var(--sage); } .lvl-3 .care-items li::before { color: var(--sage); } .lvl-3 .scale-body { background: #f3faf5; }
+.lvl-4 .scale-header { background: #e8f4ee; } .lvl-4 .scale-num { background: #7a9e8e; } .lvl-4 .scale-name { color: #3d6b58; } .lvl-4 .care-items li::before { color: #7a9e8e; } .lvl-4 .scale-body { background: #f0faf5; }
+.lvl-5 .scale-header { background: var(--gold-light); } .lvl-5 .scale-num { background: var(--gold); } .lvl-5 .scale-name { color: #7a5a10; } .lvl-5 .care-items li::before { color: var(--gold); } .lvl-5 .scale-body { background: #fdf9ee; }
+.lvl-6 .scale-header { background: #fce8d4; } .lvl-6 .scale-num { background: #d4884a; } .lvl-6 .scale-name { color: #8a4a18; } .lvl-6 .care-items li::before { color: #d4884a; } .lvl-6 .scale-body { background: #fdf7f0; }
+.lvl-7 .scale-header { background: var(--terracotta-light); } .lvl-7 .scale-num { background: var(--terracotta); } .lvl-7 .scale-name { color: var(--terracotta); } .lvl-7 .care-items li::before { color: var(--terracotta); } .lvl-7 .scale-body { background: #fdf5f3; }
+.lvl-8 .scale-header { background: #fce0e0; } .lvl-8 .scale-num { background: #c47a7a; } .lvl-8 .scale-name { color: #8a3a3a; } .lvl-8 .care-items li::before { color: #c47a7a; } .lvl-8 .scale-body { background: #fdf2f2; }
+.lvl-9 .scale-header { background: var(--red-light); } .lvl-9 .scale-num { background: var(--red); } .lvl-9 .scale-name { color: var(--red); } .lvl-9 .care-items li::before { color: var(--red); } .lvl-9 .scale-body { background: #fdf0f0; }
+.lvl-10 .scale-header { background: var(--navy-light); } .lvl-10 .scale-num { background: var(--navy); } .lvl-10 .scale-name { color: var(--navy); } .lvl-10 .care-items li::before { color: var(--navy); } .lvl-10 .scale-body { background: #f0f4f8; }
+
+/* ── EMERGENCY ────────────────────────────────────── */
+.emergency-banner { background: var(--red); color: white; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center; }
+.emergency-banner h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 3px; }
+.emergency-banner p { font-size: 0.82rem; opacity: 0.9; }
+.call-911 { display: block; background: white; color: var(--red); font-weight: 700; font-size: 1rem; text-decoration: none; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center; }
+.allergy-box { background: var(--gold-light); border: 2px solid var(--gold); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.allergy-box h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--navy); margin-bottom: 9px; }
+.allergy-pill { display: inline-block; background: var(--terracotta); color: white; font-size: 0.78rem; font-weight: 600; padding: 3px 9px; border-radius: 18px; margin: 2px; }
+.emergency-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 11px; }
+.emergency-card h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--red); margin-bottom: 9px; }
+.emergency-card ul { list-style: none; }
+.emergency-card ul li { padding: 4px 0; font-size: 0.84rem; line-height: 1.5; display: flex; gap: 7px; border-bottom: 1px solid var(--border); }
+.emergency-card ul li:last-child { border-bottom: none; }
+.emergency-card ul li::before { content: '⚠'; flex-shrink: 0; color: var(--gold); }
+
+/* ── MEDS ─────────────────────────────────────────── */
+.meds-note { background: var(--teal-light); border: 1px solid var(--teal); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.83rem; color: #2e6b66; line-height: 1.6; }
+.meds-filter { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-btn { padding: 5px 13px; border-radius: 18px; border: 1px solid var(--border); background: var(--warm-white); font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-soft); }
+.filter-btn.active, .filter-btn:hover { background: var(--navy); color: white; border-color: var(--navy); }
+.med-group-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: white; background: var(--navy); border-radius: 7px; padding: 5px 11px; margin: 12px 0 7px; }
+.med-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; margin-bottom: 7px; display: flex; align-items: flex-start; gap: 10px; }
+.med-card.hidden { display: none; }
+.med-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.dot-daily { background: var(--teal); } .dot-prn { background: var(--gold); } .dot-biweekly { background: var(--lavender); } .dot-other { background: var(--sage); }
+.med-info { flex: 1; }
+.med-name { font-weight: 600; font-size: 0.9rem; color: var(--navy); margin-bottom: 2px; }
+.med-detail { font-size: 0.78rem; color: var(--text-soft); line-height: 1.4; }
+.med-hold { font-size: 0.75rem; font-weight: 500; margin-top: 4px; padding: 2px 7px; border-radius: 6px; display: inline-block; }
+.med-hold-never { background: var(--sage-light); color: var(--sage); }
+.med-hold-caution { background: #fff3cd; color: #856404; }
+.med-hold-rheum { background: var(--lavender-light); color: var(--lavender); }
+.med-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+.badge-daily { background: var(--teal-light); color: var(--teal); } .badge-prn { background: var(--gold-light); color: #7a5a10; } .badge-biweekly { background: var(--lavender-light); color: var(--lavender); } .badge-other { background: var(--sage-light); color: var(--sage); }
+
+/* ── CONDITIONS ───────────────────────────────────── */
+.condition-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 9px; }
+.condition-header { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.condition-header:hover { background: rgba(0,0,0,0.02); }
+.condition-name { font-weight: 600; font-size: 0.9rem; color: var(--navy); }
+.condition-system { font-size: 0.7rem; color: var(--text-soft); background: var(--cream); padding: 2px 8px; border-radius: 9px; flex-shrink: 0; margin-left: 8px; }
+.condition-body { display: none; padding: 11px 14px; border-top: 1px solid var(--border); font-size: 0.84rem; line-height: 1.7; color: var(--text-soft); }
+.condition-card.open .condition-body { display: block; }
+
+/* ── COMFORT & COZY ───────────────────────────────── */
+.comfort-section-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--navy); margin: 18px 0 9px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+.comfort-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 12px; padding: 13px; margin-bottom: 9px; }
+.comfort-card h4 { font-weight: 600; font-size: 0.88rem; color: var(--teal); margin-bottom: 7px; }
+.comfort-card ul { list-style: none; }
+.comfort-card ul li { font-size: 0.84rem; line-height: 1.6; padding: 3px 0 3px 14px; position: relative; color: var(--text-soft); }
+.comfort-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 0.78rem; }
+.quote-box { background: linear-gradient(135deg, var(--gold-light), var(--cream)); border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; padding: 13px 15px; margin-bottom: 13px; font-style: italic; color: var(--navy); font-size: 0.87rem; line-height: 1.7; }
+.cozy-section { margin-bottom: 10px; background: white; border: 1px solid #e8e4f0; border-radius: 14px; overflow: visible; box-shadow: 0 2px 8px rgba(32,58,85,0.05); }
+.cozy-header { font-size: 0.88rem; font-weight: 700; color: var(--navy); padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: white; transition: background 0.15s; }
+.cozy-header:hover { background: var(--cream); }
+.cozy-header span { font-size: 0.8rem; color: var(--text-soft); font-weight: 400; }
+.cozy-list { list-style: none; padding: 2px 0 8px; border-top: 1px solid var(--border); display: none; border-radius: 0 0 14px 14px; overflow: hidden; }
+.cozy-list.open { display: block; }
+.cozy-list li { display: flex; align-items: center; gap: 10px; padding: 7px 18px; font-size: 0.86rem; color: var(--text-soft); line-height: 1.4; border-bottom: 1px solid rgba(0,0,0,0.03); transition: background 0.1s; }
+.cozy-list li:last-child { border-bottom: none; }
+.cozy-list li:hover { background: var(--cream); }
+.cozy-bullet { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--teal); opacity: 0.55; }
+
+/* ── PHOTO GALLERY ─────────────────────────────────── */
+.gallery-upload-card {
+  background: white;
+  border: 1px solid #e8e4f0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(32,58,85,0.06);
+}
+.gallery-upload-area {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 22px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+  margin-bottom: 12px;
+}
+.gallery-upload-area:hover { border-color: var(--teal); background: var(--teal-light); }
+.gallery-upload-area .upload-big-icon { font-size: 2.2rem; margin-bottom: 6px; }
+.gallery-upload-area p { font-size: 0.84rem; color: var(--text-soft); margin: 0; }
+.gallery-upload-area p strong { color: var(--navy); }
+#gallery-img-input { display: none; }
+
+.gallery-meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gallery-meta-field { display: flex; flex-direction: column; gap: 4px; }
+.gallery-meta-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); }
+.gallery-meta-input {
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--navy);
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.gallery-meta-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(111,175,169,0.15); background: white; }
+.gallery-caption-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--navy);
+  background: #fafafa;
+  outline: none;
+  resize: none;
+  height: 60px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.gallery-caption-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(111,175,169,0.15); background: white; }
+.gallery-caption-input::placeholder { color: #b8b0cc; }
+.gallery-pending-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gallery-pending-wrap { position: relative; width: 72px; height: 72px; }
+.gallery-pending-wrap img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.gallery-pending-remove { position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: white; border: none; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.gallery-save-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--navy), #2a4a6a);
+  color: var(--gold-light);
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(32,58,85,0.2);
+}
+.gallery-save-btn:hover { background: linear-gradient(135deg, var(--teal), #4a9f99); transform: translateY(-1px); }
+
+/* Filter bar */
+.gallery-filters {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.gallery-filter-btn {
+  padding: 5px 13px;
+  border-radius: 18px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: all 0.15s;
+}
+.gallery-filter-btn.active, .gallery-filter-btn:hover {
+  background: var(--navy); color: white; border-color: var(--navy);
+}
+
+/* Gallery grid */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.gallery-photo-card {
+  background: white;
+  border: 1px solid #e8e4f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(32,58,85,0.06);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.gallery-photo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(32,58,85,0.1); }
+.gallery-photo-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+.gallery-photo-meta {
+  padding: 8px 10px;
+}
+.gallery-photo-date {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-bottom: 2px;
+}
+.gallery-photo-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  background: var(--lavender-light);
+  color: var(--lavender);
+  border-radius: 8px;
+  padding: 1px 6px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.gallery-photo-caption {
+  font-size: 0.76rem;
+  color: var(--text-soft);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.gallery-photo-delete {
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--border);
+  font-size: 0.72rem;
+  padding: 4px;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.gallery-photo-delete:hover { color: var(--red); }
+.gallery-empty {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  padding: 32px 0;
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+.gallery-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--navy);
+  margin: 16px 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gallery-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+/* AI tool buttons */
+.ai-tool-btn { width:100%; padding:12px 14px; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; text-align:left; transition:all 0.15s; display:flex; flex-direction:column; gap:2px; }
+.ai-tool-btn span { font-size:0.74rem; font-weight:400; opacity:0.8; }
+.ai-tool-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+.ai-tool-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+/* Lightbox caption */
+.lightbox-caption {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 80vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 8px; object-fit: contain; }
+.lightbox-close { position: absolute; top: 14px; right: 14px; background: white; border: none; border-radius: 50%; width: 34px; height: 34px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <div class="header-spoon">
+      <svg class="spoon-svg left" viewBox="0 0 40 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="20" cy="18" rx="13" ry="16" fill="rgba(111,175,169,0.7)"/>
+        <rect x="17" y="33" width="6" height="52" rx="3" fill="rgba(111,175,169,0.6)"/>
+        <ellipse cx="14" cy="16" rx="4" ry="4" fill="rgba(255,255,255,0.15)"/>
+      </svg>
+      <div>
+        <div class="header-brand">The Spoonbook</div>
+        <div class="header-tagline-main">Track it. Get it. Own it.</div>
+        <div class="header-tagline-sub">Spoons are data. You are more. 🤍</div>
+      </div>
+      <svg class="spoon-svg right" viewBox="0 0 40 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="20" cy="18" rx="13" ry="16" fill="rgba(154,144,188,0.7)"/>
+        <rect x="17" y="33" width="6" height="52" rx="3" fill="rgba(154,144,188,0.6)"/>
+        <ellipse cx="14" cy="16" rx="4" ry="4" fill="rgba(255,255,255,0.15)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('home')">Journal</button>
+  <button class="nav-btn" onclick="showSection('scale')">Scale</button>
+  <button class="nav-btn" onclick="showSection('emergency')">Emergency</button>
+  <button class="nav-btn" onclick="showSection('meds')">Meds</button>
+  <button class="nav-btn" onclick="showSection('conditions')">Conditions</button>
+  <button class="nav-btn" onclick="showSection('systems')">Systems</button>
+  <button class="nav-btn" onclick="showSection('photos')">Photos</button>
+  <button class="nav-btn" onclick="showSection('comfort')">Comfort</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- HOME = JOURNAL                                        -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section active" id="home">
+
+  <!-- Daily wit -->
+  <div class="wit-banner" id="wit-banner">
+    <div class="wit-icon">🥄</div>
+    <div class="wit-text"><strong>Today's Spoonbook Wisdom</strong><span id="wit-quote"></span></div>
+  </div>
+
+  <!-- Spoon Meter -->
+  <div class="spoon-meter-block">
+    <div class="spoon-meter-title">Spoon Meter — How many spoons do you have today?</div>
+    <div class="spoon-row" id="spoon-row">
+      <button class="spoon-btn" onclick="selectSpoon(1)" title="1">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(2)" title="2">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(3)" title="3">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(4)" title="4">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(5)" title="5">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(6)" title="6">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(7)" title="7">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(8)" title="8">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(9)" title="9">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(10)" title="10">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(11)" title="11">🥄</button>
+      <button class="spoon-btn" onclick="selectSpoon(12)" title="12">🥄</button>
+    </div>
+    <div class="spoon-count-label" id="spoon-label">Tap a spoon to set your count for today.</div>
+  </div>
+
+  <!-- 1. Existential Scale -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-lavender">🌡️</div><div class="jblock-title">The Escalating Existential Scale</div></div>
+    <div class="jblock-subtitle">How are you, really?</div>
+    <div class="es-grid">
+      <button class="es-btn es-1" onclick="selectES(1)"><span class="es-num">1</span>🌈 Utopia</button>
+      <button class="es-btn es-2" onclick="selectES(2)"><span class="es-num">2</span>✨ Sparkly</button>
+      <button class="es-btn es-3" onclick="selectES(3)"><span class="es-num">3</span>😊 Okay</button>
+      <button class="es-btn es-4" onclick="selectES(4)"><span class="es-num">4</span>😐 Meh</button>
+      <button class="es-btn es-5" onclick="selectES(5)"><span class="es-num">5</span>☕ Caffeine</button>
+      <button class="es-btn es-6" onclick="selectES(6)"><span class="es-num">6</span>🫠 Questionable</button>
+      <button class="es-btn es-7" onclick="selectES(7)"><span class="es-num">7</span>🌧️ Wobbling</button>
+      <button class="es-btn es-8" onclick="selectES(8)"><span class="es-num">8</span>🚨 Dumpster</button>
+      <button class="es-btn es-9" onclick="selectES(9)"><span class="es-num">9</span>💀 Clusterfuck</button>
+      <button class="es-btn es-10" onclick="selectES(10)"><span class="es-num">10</span>🖕 Fuck</button>
+    </div>
+    <div class="es-label" id="es-label"></div>
+  </div>
+
+  <!-- 2. Pain Scale -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-terracotta">😣</div><div class="jblock-title">Pain Scale — Wong Baker Faces</div></div>
+    <div class="jblock-subtitle">What's your pain level right now?</div>
+    <div class="pain-grid" style="grid-template-columns:repeat(5,1fr)">
+      <button class="pain-btn" onclick="selectPain(1)"><span class="pain-face">😄</span><span class="pain-num">1</span></button>
+      <button class="pain-btn" onclick="selectPain(2)"><span class="pain-face">🙂</span><span class="pain-num">2</span></button>
+      <button class="pain-btn" onclick="selectPain(3)"><span class="pain-face">😐</span><span class="pain-num">3</span></button>
+      <button class="pain-btn" onclick="selectPain(4)"><span class="pain-face">😕</span><span class="pain-num">4</span></button>
+      <button class="pain-btn" onclick="selectPain(5)"><span class="pain-face">😟</span><span class="pain-num">5</span></button>
+      <button class="pain-btn" onclick="selectPain(6)"><span class="pain-face">😣</span><span class="pain-num">6</span></button>
+      <button class="pain-btn" onclick="selectPain(7)"><span class="pain-face">😫</span><span class="pain-num">7</span></button>
+      <button class="pain-btn" onclick="selectPain(8)"><span class="pain-face">😢</span><span class="pain-num">8</span></button>
+      <button class="pain-btn" onclick="selectPain(9)"><span class="pain-face">😭</span><span class="pain-num">9</span></button>
+      <button class="pain-btn" onclick="selectPain(10)"><span class="pain-face">🤯</span><span class="pain-num">10</span></button>
+    </div>
+  </div>
+
+  <!-- 3. Flare -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-terracotta">🔥</div><div class="jblock-title">Flare?</div></div>
+    <div class="jblock-subtitle">Is your body in active flare today?</div>
+    <div class="radio-row">
+      <div class="radio-opt" id="flare-yes" onclick="selectRadio('flare','yes')">🔥 Yes — Active Flare</div>
+      <div class="radio-opt" id="flare-no" onclick="selectRadio('flare','no')">✓ No Flare</div>
+    </div>
+  </div>
+
+  <!-- 4. O2 -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-teal">🫁</div><div class="jblock-title">Wearing Oxygen?</div></div>
+    <div class="jblock-subtitle">Are you on supplemental O₂ today?</div>
+    <div class="radio-row">
+      <div class="radio-opt" id="o2-yes" onclick="selectRadio('o2','yes')">🫁 Yes — On O₂</div>
+      <div class="radio-opt" id="o2-no" onclick="selectRadio('o2','no')">✓ Not Today</div>
+    </div>
+  </div>
+
+  <!-- 5. Weather -->
+  <div class="weather-box" id="weather-box">
+    <div class="weather-loading" id="weather-loading">📍 Loading local weather…</div>
+    <div id="weather-data" style="display:none">
+      <div class="weather-grid">
+        <div class="weather-item"><div class="weather-icon" id="w-icon">🌤</div><div class="weather-val" id="w-temp">--</div><div class="weather-lbl">Temp °F</div></div>
+        <div class="weather-item"><div class="weather-icon">🫧</div><div class="weather-val" id="w-humidity">--</div><div class="weather-lbl">Humidity %</div></div>
+        <div class="weather-item"><div class="weather-icon">📊</div><div class="weather-val" id="w-pressure">--</div><div class="weather-lbl">Pressure inHg</div></div>
+        <div class="weather-item"><div class="weather-icon">🌿</div><div class="weather-val" id="w-pollen">--</div><div class="weather-lbl">Pollen</div></div>
+        <div class="weather-item"><div class="weather-icon">💨</div><div class="weather-val" id="w-aqi">--</div><div class="weather-lbl">AQI</div></div>
+        <div class="weather-item"><div class="weather-icon">🌡️</div><div class="weather-val" id="w-feels">--</div><div class="weather-lbl">Feels Like</div></div>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-soft);margin-top:8px;text-align:center" id="w-location"></div>
+    </div>
+  </div>
+
+  <!-- 6. Body Info -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-sage">📊</div><div class="jblock-title">Body Info</div></div>
+    <div class="jblock-subtitle">Vitals grouped by system — fill in what you have.</div>
+
+    <!-- Sleep -->
+    <div class="body-group-label">🌙 Sleep</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">Hours Slept</div>
+        <input class="body-input" type="number" id="sleep-hours" placeholder="e.g. 7.5" min="0" max="24" step="0.5">
+      </div>
+      <div class="body-field">
+        <div class="body-label">Sleep Score</div>
+        <input class="body-input" type="number" id="sleep-score" placeholder="e.g. 78" min="0" max="100">
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <div class="body-label" style="margin-bottom:6px">Sleep Quality</div>
+      <div class="sleep-faces">
+        <div class="sleep-face" onclick="selectSleep(this,'😴','Great')" title="Great">😴</div>
+        <div class="sleep-face" onclick="selectSleep(this,'😊','Good')" title="Good">😊</div>
+        <div class="sleep-face" onclick="selectSleep(this,'😐','Okay')" title="Okay">😐</div>
+        <div class="sleep-face" onclick="selectSleep(this,'😕','Poor')" title="Poor">😕</div>
+        <div class="sleep-face" onclick="selectSleep(this,'😩','Terrible')" title="Terrible">😩</div>
+        <div class="sleep-face" onclick="selectSleep(this,'🚫','None')" title="None">🚫</div>
+      </div>
+    </div>
+
+    <!-- CPAP -->
+    <div class="body-group-label" style="margin-top:14px">😮‍💨 CPAP</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">CPAP Hours</div>
+        <input class="body-input" type="number" id="cpap-hours" placeholder="e.g. 6.5" min="0" max="24" step="0.5">
+      </div>
+      <div class="body-field">
+        <div class="body-label">CPAP Score</div>
+        <input class="body-input" type="number" id="cpap-score" placeholder="e.g. 85" min="0" max="100">
+      </div>
+    </div>
+
+    <!-- Oxygen -->
+    <div class="body-group-label" style="margin-top:14px">🫁 Oxygen</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">SpO₂ Avg (%)</div>
+        <input class="body-input" type="number" id="spo2-avg" placeholder="e.g. 94" min="50" max="100">
+      </div>
+      <div class="body-field">
+        <div class="body-label">Lowest SpO₂ (%)</div>
+        <input class="body-input" type="number" id="spo2-low" placeholder="e.g. 88" min="50" max="100">
+      </div>
+    </div>
+
+    <!-- Heart -->
+    <div class="body-group-label" style="margin-top:14px">❤️ Heart</div>
+    <div style="margin-bottom:8px">
+      <div class="body-label" style="margin-bottom:6px">Blood Pressure</div>
+      <div class="bp-row">
+        <input class="body-input" type="number" id="bp-sys" placeholder="Systolic" min="50" max="250" style="flex:1">
+        <span class="bp-sep">/</span>
+        <input class="body-input" type="number" id="bp-dia" placeholder="Diastolic" min="30" max="150" style="flex:1">
+      </div>
+    </div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">HRV Avg (ms)</div>
+        <input class="body-input" type="number" id="hrv" placeholder="e.g. 42" min="0" max="300">
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="body-group-label" style="margin-top:14px">⚖️ Body</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">Weight (lbs)</div>
+        <input class="body-input" type="number" id="weight" placeholder="e.g. 180" min="50" max="500">
+      </div>
+    </div>
+
+    <!-- Mood -->
+    <div class="body-group-label" style="margin-top:14px">💭 Mood</div>
+    <div class="mood-grid">
+      <div class="mood-btn" onclick="selectMood(this)">🌈 Joyful</div>
+      <div class="mood-btn" onclick="selectMood(this)">😊 Happy</div>
+      <div class="mood-btn" onclick="selectMood(this)">🙂 Content</div>
+      <div class="mood-btn" onclick="selectMood(this)">😌 Calm</div>
+      <div class="mood-btn" onclick="selectMood(this)">😐 Neutral</div>
+      <div class="mood-btn" onclick="selectMood(this)">😕 Frustrated</div>
+      <div class="mood-btn" onclick="selectMood(this)">😞 Down</div>
+      <div class="mood-btn" onclick="selectMood(this)">😢 Overwhelmed</div>
+      <div class="mood-btn" onclick="selectMood(this)">😫 Despair Goblin</div>
+      <div class="mood-btn" onclick="selectMood(this)">🖕 Fuck Everything</div>
+    </div>
+
+  </div>
+
+  <!-- 7. Medications taken today -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-gold">💊</div><div class="jblock-title">Medications Taken Today</div></div>
+    <div class="jblock-subtitle">PRN and as-needed meds used today.</div>
+    <div class="chip-grid">
+      <div class="chip chip-med" onclick="toggleChip(this)">Zepbound</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Cimzia</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Tylenol</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Muscle Relaxer</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Tramadol</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Tums</div>
+      <div class="chip chip-med" onclick="toggleChip(this)">Zofran</div>
+    </div>
+  </div>
+
+  <!-- 8. Symptoms -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-terracotta">📋</div><div class="jblock-title">Symptoms</div></div>
+    <div class="jblock-subtitle">What's showing up today?</div>
+    <div class="chip-grid">
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Balance Issues</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Breathlessness</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Burning Eyes</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Congestion</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Difficulty Hearing</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Eye Pain</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Facial Swelling</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Fatigue</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Headache</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Joint Pain</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Left Ear</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Mobility</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Muscle Pain</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Nausea</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Nose</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Pre-Syncope</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Rib Pain</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Right Ear</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Sensitive Skin</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Sleep Issues</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Sternum Pain</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Stiffness</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Syncope</div>
+      <div class="chip chip-symptom" onclick="toggleChip(this)">Tinnitus</div>
+    </div>
+  </div>
+
+  <!-- 9. Therapy -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-teal">🌿</div><div class="jblock-title">Therapy</div></div>
+    <div class="jblock-subtitle">What supported your body today?</div>
+    <div class="chip-grid">
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Aromatherapy</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Bath</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">CBT</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Cold Therapy</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Compression</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">CPAP Worn</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Cryotherapy</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Heat</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Infrared Sauna</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Journaling</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Massage</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Meditation</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Physical Therapy</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Temazcal</div>
+    </div>
+
+    <!-- Assistive Devices subsection -->
+    <div class="body-group-label" style="margin-top:14px">🦯 Assistive Devices Used Today</div>
+    <div class="chip-grid">
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Air Cast</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Boot</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Cane</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Grabber</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Knee Scooter</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Walker</div>
+      <div class="chip chip-therapy" onclick="toggleChip(this)">Wheelchair</div>
+    </div>
+  </div>
+
+  <!-- 10. Factors -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-lavender">🔍</div><div class="jblock-title">Factors</div></div>
+    <div class="jblock-subtitle">What might be impacting you today?</div>
+    <div class="chip-grid">
+      <div class="chip chip-factor" onclick="toggleChip(this)">Alcohol</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Day Off</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Emotional Stress</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">House Cleaning</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Late Bedtime</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Poor Sleep</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Shopping</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Shower</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Social</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Travel</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Trouble Falling Asleep</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Trouble Staying Asleep</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Vivid Dreams</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Woke Early</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Woke Tired</div>
+      <div class="chip chip-factor" onclick="toggleChip(this)">Yard Work</div>
+    </div>
+  </div>
+
+  <!-- 11. Activity -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-sage">⚡</div><div class="jblock-title">Activity</div></div>
+    <div class="jblock-subtitle">Movement wins — big or tiny.</div>
+    <div class="chip-grid">
+      <div class="chip chip-activity" onclick="toggleChip(this)">5k Steps</div>
+      <div class="chip chip-activity" onclick="toggleChip(this)">10k Steps</div>
+      <div class="chip chip-activity" onclick="toggleChip(this)">Peloton</div>
+      <div class="chip chip-activity" onclick="toggleChip(this)">Pilates</div>
+      <div class="chip chip-activity" onclick="toggleChip(this)">Stretching</div>
+      <div class="chip chip-activity" onclick="toggleChip(this)">Yoga</div>
+    </div>
+  </div>
+
+  <!-- 12. Photos -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-navy">📷</div><div class="jblock-title">Photos</div></div>
+    <div class="jblock-subtitle">Document swelling, rashes, or anything visual.</div>
+    <div class="img-upload-area" onclick="document.getElementById('img-input').click()">
+      <div style="font-size:1.7rem">📷</div>
+      <p>Tap to add photos · JPG or PNG</p>
+    </div>
+    <input type="file" id="img-input" accept="image/jpeg,image/png,image/jpg" multiple onchange="handleImages(event)">
+    <div class="img-previews" id="img-previews"></div>
+  </div>
+
+  <!-- 13. Notes -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-gold">✏️</div><div class="jblock-title">Today's Notes</div></div>
+    <div class="jblock-subtitle">Anything on your mind? Write freely.</div>
+    <textarea class="j-textarea" id="journal-note" placeholder="How are you feeling today? Anything to note for your care team…"></textarea>
+  </div>
+
+  <button class="save-btn" id="save-btn" onclick="saveEntry()">Save Today's Entry</button>
+
+  <!-- Sync status -->
+  <div id="sync-status" style="text-align:center;font-size:0.76rem;color:var(--text-soft);margin:6px 0 0;min-height:18px"></div>
+
+  <!-- AI Daily Insight -->
+  <div id="ai-insight-card" style="display:none;background:linear-gradient(135deg,#e8f6f5,#ece8f7);border:1px solid rgba(111,175,169,0.3);border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="width:30px;height:30px;background:var(--teal-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem">✨</div>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--teal)">Daily Insight from The Spoonbook AI</div>
+    </div>
+    <div id="ai-insight-text" style="font-size:0.88rem;color:var(--navy);line-height:1.7;font-family:'Playfair Display',serif;font-style:italic"></div>
+  </div>
+
+  <!-- AI Tools -->
+  <div style="margin-top:18px;background:white;border:1px solid #e8e4f0;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--navy);margin-bottom:12px">🤖 AI Analysis Tools</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="runWeeklySummary()" class="ai-tool-btn" style="background:var(--teal-light);border:1.5px solid var(--teal);color:#2e6b66">
+        📊 Weekly Summary
+        <span>Trends, patterns & insights from the past 7 days</span>
+      </button>
+      <button onclick="runCorrelations()" class="ai-tool-btn" style="background:var(--lavender-light);border:1.5px solid var(--lavender);color:#4a3d8a">
+        🔍 Find Correlations
+        <span>What factors make your days better or worse?</span>
+      </button>
+      <button onclick="runProviderReport()" class="ai-tool-btn" style="background:var(--gold-light);border:1.5px solid var(--gold);color:#7a5a10">
+        📋 Generate Provider Report
+        <span>Clinical summary ready for your care team</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- AI Result Panel -->
+  <div id="ai-result-panel" style="display:none;margin-top:12px;background:white;border:1px solid #e8e4f0;border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div id="ai-result-title" style="font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--navy)"></div>
+      <button onclick="document.getElementById('ai-result-panel').style.display='none'" style="background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:1.1rem;padding:2px 6px">✕</button>
+    </div>
+    <div id="ai-result-text" style="font-size:0.88rem;color:var(--text-soft);line-height:1.8;white-space:pre-wrap"></div>
+    <button onclick="copyAIResult()" style="margin-top:12px;width:100%;padding:9px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text-soft);cursor:pointer">Copy to Clipboard</button>
+  </div>
+
+  <!-- Past entries -->
+  <div class="entries-title" style="margin-top:22px">
+    Past Entries
+    <div style="display:flex;gap:6px">
+      <button onclick="syncToCloud()" id="cloud-btn" style="font-size:0.72rem;font-family:'DM Sans',sans-serif;background:var(--teal-light);border:1px solid var(--teal);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--teal);font-weight:600">☁️ Sync</button>
+      <button onclick="exportEntries()">Export</button>
+    </div>
+  </div>
+  <div id="entries-list"><div class="no-entries">No entries yet.</div></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SCALE TAB                                             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="scale">
+  <h2 class="section-title">The Escalating Existential Scale</h2>
+  <p class="section-subtitle">Honest self-assessment is the whole point. Use your spoons wisely. 🥄</p>
+
+  <!-- 1 — Utopia -->
+  <div class="scale-card lvl-1" id="card-1">
+    <div class="scale-header" onclick="toggleCard(1)">
+      <div class="scale-num">1</div>
+      <div class="scale-title-block"><div class="scale-name">🌈 Utopia</div><div class="scale-tagline">I could conquer the world today.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>This almost never happens — honor it completely</li><li>Your body is giving you a gift today</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Do the thing you've been wanting to do — adventure, spontaneity, a project, a plan</li><li>Go outside, move your body in a way that feels joyful</li><li>Connect with someone you love</li><li>Don't waste it on errands or obligation</li></ul></div>
+      <div class="care-section"><div class="care-label">Gentle Reminder</div><ul class="care-items"><li>Pace yourself — a 1 today doesn't have to mean a 7 tomorrow</li><li>Hydrate. Eat well. Sleep on time.</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 2 — Sparkly -->
+  <div class="scale-card lvl-2" id="card-2">
+    <div class="scale-header" onclick="toggleCard(2)">
+      <div class="scale-num">2</div>
+      <div class="scale-title-block"><div class="scale-name">✨ Sparkly</div><div class="scale-tagline">Feeling surprisingly human.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Better than your baseline — energy is present, body is cooperating</li><li>A genuinely good day worth leaning into</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Take yourself out — somewhere you enjoy, not just somewhere useful</li><li>Start a project or pick up one you've been avoiding</li><li>Move your body — Pilates, a walk, yoga, Peloton</li><li>Connect socially if it feels good</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>Physical activity · Journaling · Time outside · Meditation</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 3 — Doing Okay -->
+  <div class="scale-card lvl-3" id="card-3">
+    <div class="scale-header" onclick="toggleCard(3)">
+      <div class="scale-num">3</div>
+      <div class="scale-title-block"><div class="scale-name">😊 Doing Okay</div><div class="scale-tagline">I'll take it.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Functional and relatively comfortable — this is a good day by your standards</li><li>Symptoms are present but manageable</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Normal activities are fair game — listen to what sounds appealing</li><li>Stretching or gentle movement is a good investment</li><li>Nourish well: real meals, hydration, your supplements</li><li>Enjoy something small — tea, a book, a show you love</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>Stretching · Yoga · Bath · Aromatherapy · Journaling</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 4 — Meh -->
+  <div class="scale-card lvl-4" id="card-4">
+    <div class="scale-header" onclick="toggleCard(4)">
+      <div class="scale-num">4</div>
+      <div class="scale-title-block"><div class="scale-name">😐 Meh</div><div class="scale-tagline">Functional-ish.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Getting through it — not thriving, not crashing</li><li>Pain and fatigue are present but not dominant</li><li>You can probably do things, just not enthusiastically</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Keep commitments that are low-effort; give yourself permission to drop the rest</li><li>Prioritize comfort: warm blanket, favorite tea, easy food</li><li>Gentle movement if the body is willing — don't force it</li><li>Early bedtime is a valid choice — don't fight the need for rest</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>Heating pad or ice · Compression · Calm music · Comfort TV</li></ul></div>
+      <div class="care-section"><div class="care-label">Watch</div><ul class="care-items"><li>If Meh becomes a pattern for several days, it may signal a building flare</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 5 — Running on Caffeine & Hope -->
+  <div class="scale-card lvl-5" id="card-5">
+    <div class="scale-header" onclick="toggleCard(5)">
+      <div class="scale-num">5</div>
+      <div class="scale-title-block"><div class="scale-name">☕ Running on Caffeine &amp; Hope</div><div class="scale-tagline">Pushing through on fumes.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>You're managing but it's costing you — energy is borrowed, not earned</li><li>Pain and fatigue are significant; concentration may be difficult</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Reduce obligations — cancel or postpone anything non-essential</li><li>Don't rely on caffeine to mask the need for rest</li><li>Hydrate and eat even if appetite is low</li><li>Check in with your body: what specifically hurts? Where?</li><li>Consider PRN medications if pain is spiking</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>Rest · Heating pad · Weighted blanket · Guided meditation · Warm shower</li></ul></div>
+      <div class="care-section"><div class="care-label">Watch</div><ul class="care-items"><li>This level often precedes a flare — pay attention to trends</li><li>Check SpO₂ if breathlessness increases</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 6 — Questionable Choices -->
+  <div class="scale-card lvl-6" id="card-6">
+    <div class="scale-header" onclick="toggleCard(6)">
+      <div class="scale-num">6</div>
+      <div class="scale-title-block"><div class="scale-name">🫠 Questionable Choices</div><div class="scale-tagline">The day is making decisions for me.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Significantly unwell — symptoms are loud and in charge</li><li>Cognitive fog, pain, and fatigue are all competing for attention</li><li>Normal tasks feel unreasonable</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Cancel plans without guilt — this is not optional rest, it's necessary</li><li>Take your PRN meds: Tramadol for pain, Zofran for nausea, Lasix if swelling</li><li>Soft food, warm liquids, small amounts</li><li>Don't push through — resting now costs less than crashing later</li></ul></div>
+      <div class="care-section"><div class="care-label">Environment</div><ul class="care-items"><li>Dim lights · Quiet space · Comfortable temperature · Weighted blanket</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>TENS unit · Epsom salt bath · Progressive muscle relaxation · White noise · Heat or ice</li></ul></div>
+      <div class="care-section"><div class="care-label">Watch</div><ul class="care-items"><li>Monitor SpO₂ — get on O₂ if dropping</li><li>Note if this is a new flare pattern or worsening of existing symptoms</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 7 — The Wheels Are Wobbling -->
+  <div class="scale-card lvl-7" id="card-7">
+    <div class="scale-header" onclick="toggleCard(7)">
+      <div class="scale-num">7</div>
+      <div class="scale-title-block"><div class="scale-name">🌧️ The Wheels Are Wobbling</div><div class="scale-tagline">Holding it together but barely.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Active flare territory — body is in protest mode</li><li>Pain is severe, fatigue is profound, multiple systems may be involved</li><li>This is real. It is not an overreaction.</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Full rest — bed or couch only</li><li>O₂ on if SpO₂ is dropping or breathlessness increases</li><li>PRN medications: Tramadol, Zofran, Lasix + Potassium if swelling</li><li>Bland food only: broth, crackers, toast</li><li>Small frequent sips of water</li><li>Ask for help — this is not the day to do it alone</li></ul></div>
+      <div class="care-section"><div class="care-label">Environment</div><ul class="care-items"><li>Quiet room · Soft lighting · Light touch only — no pressure on inflamed areas</li></ul></div>
+      <div class="care-section"><div class="care-label">Therapies That Fit</div><ul class="care-items"><li>Heating pad or ice (ask what helps) · Neck massager · Magnesium lotion · Box breathing</li></ul></div>
+      <div class="care-section"><div class="care-label">Watch</div><ul class="care-items"><li>Check SpO₂ every few hours</li><li>Monitor for signs of infection: fever, spreading redness, unusual pain</li><li>If symptoms worsen toward an 8 or 9 — consider contacting your care team</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 8 — Dumpster Fire -->
+  <div class="scale-card lvl-8" id="card-8">
+    <div class="scale-header" onclick="toggleCard(8)">
+      <div class="scale-num">8</div>
+      <div class="scale-title-block"><div class="scale-name">🚨 Dumpster Fire</div><div class="scale-tagline">Everything is on fire and I am in the fire.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>Severe flare — body is in crisis mode</li><li>Multiple systems may be involved simultaneously</li><li>You should not be alone right now</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This</div><ul class="care-items"><li>Contact someone — your husband, a friend, your care team</li><li>O₂ on immediately if any breathlessness or SpO₂ concern</li><li>All PRN medications as appropriate</li><li>Nothing by mouth except water and bland food if tolerated</li><li>Lie down in your most comfortable position</li><li>Consider calling your rheumatologist or care team today</li></ul></div>
+      <div class="care-section"><div class="care-label">Environment</div><ul class="care-items"><li>Full quiet · No obligations · Absolute minimal stimulation</li></ul></div>
+      <div class="care-section"><div class="care-label">ER Warning Signs at This Level</div><ul class="care-items"><li>SpO₂ below 88% not responding to O₂</li><li>HR in 50s or BP in 80s</li><li>Throat swelling or difficulty swallowing</li><li>Fever over 103°F</li><li>Chest pain with shortness of breath</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 9 — Absolute Clusterfuck -->
+  <div class="scale-card lvl-9" id="card-9">
+    <div class="scale-header" onclick="toggleCard(9)">
+      <div class="scale-num">9</div>
+      <div class="scale-title-block"><div class="scale-name">💀 Absolute Clusterfuck</div><div class="scale-tagline">My body has fully betrayed me.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">What This Means</div><ul class="care-items"><li>You are in serious distress — this is a medical situation</li><li>Someone else needs to be making decisions right now</li></ul></div>
+      <div class="care-section"><div class="care-label">Do This — Right Now</div><ul class="care-items"><li>Call someone immediately — you should not be managing this alone</li><li>O₂ on now, no question</li><li>Lie still, stay warm, do not exert yourself</li><li>Strongly consider going to the ER or calling your care team urgently</li></ul></div>
+      <div class="care-section"><div class="care-label">Tell the ER</div><ul class="care-items"><li>Relapsing Polychondritis + Seronegative RA — systemic autoimmune</li><li>Immunosuppressed: Cellcept, Prednisone, Cimzia</li><li>Allergies: Ancef, Vancomycin, Compazine, Adhesive Tape, CHG</li><li>Home O₂ patient, tunneled port, bilateral hip replacements, cervical disc prosthetics</li><li>History of sepsis (2017) and anaphylactoid reaction to anesthesia</li></ul></div>
+    </div>
+  </div>
+
+  <!-- 10 — Fuck -->
+  <div class="scale-card lvl-10" id="card-10">
+    <div class="scale-header" onclick="toggleCard(10)">
+      <div class="scale-num">10</div>
+      <div class="scale-title-block"><div class="scale-name">🖕 Fuck</div><div class="scale-tagline">This is a medical emergency.</div></div>
+      <div class="scale-chevron">▾</div>
+    </div>
+    <div class="scale-body">
+      <div class="care-section"><div class="care-label">Stop. Call 911 or go to the ER now.</div><ul class="care-items"><li>You have reached the limit of what can be managed at home</li><li>Do not wait. Do not minimize. Do not drive yourself.</li></ul></div>
+      <div class="care-section"><div class="care-label">Call 911 If Any of These Are Present</div><ul class="care-items"><li>SpO₂ below 88% not improving on oxygen</li><li>HR in 50s or BP in 80s — call 911</li><li>Chest pain with shortness of breath</li><li>Confusion, inability to speak or communicate clearly</li><li>Throat swelling or severe difficulty swallowing</li><li>Loss of consciousness or near-fainting</li><li>Fever over 103°F with low BP or confusion</li></ul></div>
+      <div class="care-section"><div class="care-label">Tell Every Provider — Every Time</div><ul class="care-items"><li>🚫 ALLERGIES: Ancef · Vancomycin · Compazine · Adhesive Tape · CHG</li><li>Immunosuppressed: Cellcept + Prednisone + Cimzia</li><li>Tunneled port · Home O₂ · Bilateral hip replacements · Cervical disc prosthetics C5–C7</li><li>Severe anesthesia reaction: blistering rash — flag before any procedure</li><li>Relapsing Polychondritis + Seronegative RA</li></ul></div>
+      <div class="care-section"><div class="care-label">You Are Not Overreacting</div><ul class="care-items"><li>A 10 is real. You have a complex, serious medical history.</li><li>You know your body. Trust it.</li></ul></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- EMERGENCY                                             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="emergency">
+  <div class="emergency-banner">
+    <h2>⚡ Emergency Reference</h2>
+    <p>When in doubt, always call 911. Do not wait.</p>
+    <a class="call-911" href="tel:911">CALL 911</a>
+  </div>
+  <div class="allergy-box">
+    <h3>⛔ Drug Allergies — Tell Every Provider</h3>
+    <div><span class="allergy-pill">Ancef</span><span class="allergy-pill">Vancomycin</span><span class="allergy-pill">Compazine</span><span class="allergy-pill">Adhesive Tape</span><span class="allergy-pill">CHG</span></div>
+  </div>
+  <div class="emergency-card"><h3>🫁 Breathing / O₂</h3><ul><li>SpO₂ below 88% not improving on O₂</li><li>Severe or sudden shortness of breath</li><li>Throat swelling or swallowing difficulty (RP flare)</li><li>Lips or fingernails turning blue</li></ul></div>
+  <div class="emergency-card"><h3>❤️ Heart / BP</h3><ul><li>HR in 50s–60s with BP in 80s (happened Feb 2025)</li><li>Rapid irregular heartbeat — Afib can recur</li><li>Chest pain with shortness of breath</li></ul></div>
+  <div class="emergency-card"><h3>🧠 Neurological</h3><ul><li>Confusion, slurred speech, sudden inability to communicate</li><li>Sudden severe headache unlike normal migraines</li><li>Loss of consciousness or fainting</li></ul></div>
+  <div class="emergency-card"><h3>🦴 Fracture / Fall</h3><ul><li>Any fall — pathological fractures can occur without trauma</li><li>Sudden severe localized bone pain after movement</li><li>Protect bilateral hip replacements</li></ul></div>
+  <div class="emergency-card"><h3>🦠 Infection / Sepsis</h3><ul><li>Fever over 103°F — immunosuppressed (Cellcept, Prednisone, Cimzia)</li><li>Sudden chills, confusion, rapid HR with low BP</li><li>History of sepsis/SIRS (2017) and cutaneous MRSA (2022)</li><li>Infected-looking skin: spreading redness, pus, warmth</li></ul></div>
+  <div class="emergency-card"><h3>🏥 At the Hospital — Always Say</h3><ul><li>On chronic immunosuppressants — high infection risk</li><li>Tunneled port (March 2023)</li><li>Home oxygen / chronic hypoxia</li><li>Bilateral hip replacements + cervical disc prosthetics C5–C7</li><li>Severe anesthesia reaction: profound blistering rash — flag before any procedure</li><li>ALLERGIES: Ancef, Vancomycin, Compazine, Adhesive Tape, CHG</li></ul></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MEDS                                                  -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="meds">
+  <h2 class="section-title">Medications</h2>
+  <p class="section-subtitle">PRN = as needed. Never skip scheduled meds. Note time if a dose is missed.</p>
+  <div class="meds-note"><strong>Allergies:</strong> Ancef · Vancomycin · Compazine · Adhesive Tape · CHG — always report to any provider.</div>
+  <div class="meds-filter">
+    <button class="filter-btn active" onclick="filterMeds('all',this)">All</button>
+    <button class="filter-btn" onclick="filterMeds('daily',this)">Daily</button>
+    <button class="filter-btn" onclick="filterMeds('prn',this)">PRN</button>
+    <button class="filter-btn" onclick="filterMeds('other',this)">Other</button>
+  </div>
+  <div id="med-list">
+    <div class="med-group-label">🌅 Morning</div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Synthroid (Levothyroxine) 75mcg</div><div class="med-detail">1 pill · Empty stomach, 30 min before food · Thyroid</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Prilosec (Omeprazole) 40mg</div><div class="med-detail">1 capsule · Before eating · Stomach protection</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Metoprolol ER 50mg</div><div class="med-detail">1 pill · With or after food · Heart rate</div><div class="med-hold med-hold-caution">⚠ HOLD if HR &lt; 60</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Losartan (Losatrin) 50mg</div><div class="med-detail">1 pill · Blood pressure</div><div class="med-hold med-hold-caution">⚠ HOLD if SBP &lt; 100 or DBP &lt; 60</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Spironolactone 25mg</div><div class="med-detail">1 pill · Fluid / blood pressure</div><div class="med-hold med-hold-caution">⚠ HOLD if low BP, GI upset, or dehydration</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Cellcept (Mycophenolate) 3g</div><div class="med-detail">3 pills · With food · Immunosuppressant</div><div class="med-hold med-hold-rheum">🔒 HOLD only after Rheumatology consult</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Prednisone (variable dose)</div><div class="med-detail">With food · Steroid — never stop abruptly</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Celebrex 200mg</div><div class="med-detail">1 capsule · With food · Anti-inflammatory</div><div class="med-hold med-hold-caution">⚠ HOLD if GI upset</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Tegretol (Carbamazepine) 200mg</div><div class="med-detail">1 pill · With food · Nerve pain</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Colchicine 0.6mg</div><div class="med-detail">1 pill normally · May increase to 2 with severe joint pain · Inflammation</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Estradiol gel 1mg</div><div class="med-detail">Apply to skin · Hormone replacement</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Xiidra eye drops</div><div class="med-detail">Both eyes · Dry eye · Also evening dose</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Naltrexone (LDN) 3mg</div><div class="med-detail">1 pill · Immune modulation</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Morning</span></div>
+
+    <div class="med-group-label">🌅🌙 Morning &amp; Night</div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Lyrica (Pregabalin) 200mg</div><div class="med-detail">1 capsule · Three times daily — morning, afternoon, night · Nerve pain</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">3× Daily</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Celebrex 200mg (evening dose)</div><div class="med-detail">1 capsule · With food</div><div class="med-hold med-hold-caution">⚠ HOLD if GI upset</div></div><span class="med-badge badge-daily">Evening</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Cellcept 3g (evening dose)</div><div class="med-detail">3 pills · With food</div><div class="med-hold med-hold-rheum">🔒 HOLD only after Rheumatology consult</div></div><span class="med-badge badge-daily">Evening</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Tegretol 200mg (evening dose)</div><div class="med-detail">1 pill · With food</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Evening</span></div>
+
+    <div class="med-group-label">🌙 Nightly</div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Ambien 10mg</div><div class="med-detail">1 pill · Bedtime only — be ready to sleep · Sleep</div><div class="med-hold med-hold-caution">⚠ HOLD if already very lethargic</div></div><span class="med-badge badge-daily">Nightly</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Duloxetine (Cymbalta) 60mg</div><div class="med-detail">1 capsule · Pain &amp; mood</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Nightly</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Singulair (Montelukast) 10mg</div><div class="med-detail">1 pill · Airway inflammation</div><div class="med-hold med-hold-never">✔ Do not hold</div></div><span class="med-badge badge-daily">Nightly</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot dot-daily"></div><div class="med-info"><div class="med-name">Lipitor (Atorvastatin) 20mg</div><div class="med-detail">1 pill · Cholesterol</div><div class="med-hold med-hold-caution">⚠ HOLD if GI upset</div></div><span class="med-badge badge-daily">Nightly</span></div>
+
+    <div class="med-group-label">📅 Other Schedule</div>
+    <div class="med-card" data-type="other"><div class="med-dot dot-biweekly"></div><div class="med-info"><div class="med-name">Cimzia (Certolizumab) 400mg</div><div class="med-detail">2 injections · Every other Friday morning · Biologic RP/RA</div><div class="med-hold med-hold-rheum">🔒 HOLD only after Rheumatology consult</div></div><span class="med-badge badge-biweekly">Every Other Fri</span></div>
+    <div class="med-card" data-type="other"><div class="med-dot dot-other"></div><div class="med-info"><div class="med-name">Reclast (Zoledronic acid)</div><div class="med-detail">IV infusion · Every 2 years · Bone density — provider administered</div><div class="med-hold med-hold-never">✔ Provider scheduled</div></div><span class="med-badge badge-other">Every 2 Yrs</span></div>
+
+    <div class="med-group-label">🔔 As Needed (PRN)</div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Zofran (Ondansetron) 4mg</div><div class="med-detail">1 pill · Every 6 hrs · Nausea — offer proactively if vomiting</div><div class="med-hold med-hold-never">✔ Give when needed</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Tramadol 50mg</div><div class="med-detail">1–2 pills · Every 6 hrs · Pain</div><div class="med-hold med-hold-caution">⚠ Hold if very sedated or Ambien taken recently</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Lasix (Furosemide) 20mg</div><div class="med-detail">1 pill · Swelling in feet OR trouble breathing</div><div class="med-hold med-hold-caution">⚠ ALWAYS give Potassium 20mg at same time</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Potassium 20mg</div><div class="med-detail">Give every time Lasix is given — prevents dangerous deficiency</div><div class="med-hold med-hold-caution">⚠ Always pair with Lasix</div></div><span class="med-badge badge-prn">With Lasix</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Valtrex (Valacyclovir) 3mg</div><div class="med-detail">Antiviral · Shingles or herpes outbreak</div><div class="med-hold med-hold-never">✔ Give when needed</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Fluocinolone Acetonide Ear Drops</div><div class="med-detail">Ear pain or inflammation</div><div class="med-hold med-hold-never">✔ Apply when needed</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Mupirocin 2% ointment</div><div class="med-detail">Topical antibiotic · Skin or nasal (MRSA history)</div><div class="med-hold med-hold-never">✔ Apply when needed</div></div><span class="med-badge badge-prn">PRN</span></div>
+    <div class="med-card" data-type="prn"><div class="med-dot dot-prn"></div><div class="med-info"><div class="med-name">Hydrocortisone 2.5% cream</div><div class="med-detail">Twice daily to any skin rash or lesion until resolved</div><div class="med-hold med-hold-never">✔ Apply as directed</div></div><span class="med-badge badge-prn">PRN</span></div>
+
+    <div class="med-group-label">🌙 Supplements — Nightly</div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Ashwagandha 4500mg</div><div class="med-detail">Nightly · Adaptogen / stress support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Black Cohosh 700mg</div><div class="med-detail">Nightly · Hormonal support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Boswellia 5000mg</div><div class="med-detail">Nightly · Anti-inflammatory</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Calcium 1200mg</div><div class="med-detail">Nightly · Bone support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">COQ-10 200mg</div><div class="med-detail">Nightly · Mitochondrial / cardiovascular support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">L-Theanine 400mg</div><div class="med-detail">Nightly · Calm / sleep support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Magnesium Glycinate 120mg</div><div class="med-detail">Nightly · Muscle relaxation / sleep support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Melatonin 20mg</div><div class="med-detail">Nightly · Sleep regulation</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Milk Thistle</div><div class="med-detail">Nightly · Liver support (especially with meds)</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Multivitamin</div><div class="med-detail">Nightly · General nutritional support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">NAD+ 1100mg</div><div class="med-detail">2 capsules nightly · Cellular energy / mitochondrial support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Omega-3 1125/875mg</div><div class="med-detail">Nightly · Anti-inflammatory / cardiovascular support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Probiotic</div><div class="med-detail">Nightly · Gut health (especially with immunosuppressants)</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Turmeric Curcumin 2250/500mg</div><div class="med-detail">Nightly · Anti-inflammatory</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+    <div class="med-card" data-type="daily"><div class="med-dot" style="background:var(--lavender)"></div><div class="med-info"><div class="med-name">Vitamin D3 &amp; K2 4000IU/100mg</div><div class="med-detail">Nightly · Bone density / immune support</div></div><span class="med-badge" style="background:var(--lavender-light);color:var(--lavender)">Supplement</span></div>
+
+    <div class="med-group-label" style="background:#8a3a3a">❌ Failed Rheumatologic Medications</div>
+    <div style="background:var(--red-light);border:1px solid #f0c0c0;border-radius:10px;padding:12px 14px;margin-bottom:7px;font-size:0.82rem;color:#7a3030;line-height:1.6;">These medications were trialed and discontinued due to inadequate response or adverse effects. For reference only — do not re-administer without specialist direction.</div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Plaquenil (Hydroxychloroquine)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Humira (Adalimumab)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Infliximab (Inflectra)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Actemra (Tocilizumab)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Simponi (Golimumab)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Methotrexate (MTX)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+    <div class="med-card" data-type="other" style="opacity:0.75"><div class="med-dot" style="background:#c47a7a"></div><div class="med-info"><div class="med-name" style="color:#8a3a3a;text-decoration:line-through">Rinvoq (Upadacitinib)</div><div class="med-detail">Discontinued · Inadequate response</div></div><span class="med-badge" style="background:var(--red-light);color:#8a3a3a">Failed</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CONDITIONS                                            -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="conditions">
+  <h2 class="section-title">Conditions &amp; History</h2>
+  <p class="section-subtitle">Tap each to expand. Conditions are alphabetical.</p>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Acute Venous Insufficiency</span><span class="condition-system">Vascular</span></div><div class="condition-body">Impaired blood return from the legs causing swelling, edema, and discomfort. Can cause 4+ pitting edema to the knee. Managed with Lasix PRN, compression, and leg elevation. Had left leg venous laser ablation with chemical injection (5/2023).</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Bilateral Hip Replacements</span><span class="condition-system">Surgical</span></div><div class="condition-body">Left hip Nov 2017, right hip Feb 2018. Both prosthetics must be disclosed to any surgical team. Cervical disc prosthetics C5–C7 (April 2024) also present. Never allow CHG skin prep without flagging allergies first.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Cervical Cancer — In Situ (Resolved)</span><span class="condition-system">Oncology</span></div><div class="condition-body">Diagnosed 2021. CIN4 graded with clean margins following LEEP procedure. Resolved. Hysterectomy/oophorectomy performed January 2023 for related and additional indications. No active cancer.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Chronic Hypoxia / Home O₂</span><span class="condition-system">Pulmonary</span></div><div class="condition-body">Oxygen levels drop below normal, especially with activity. Home oxygen started April 2024 after acute hypoxia (SpO₂ in 70s) post-surgery. Six-minute walk test showed SpO₂ at 89%. PFT abnormal (2023). If lips or fingernails look blue, get on O₂ immediately and call 911 if not improving.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Complex Pain Syndrome &amp; Neuropathy</span><span class="condition-system">Pain</span></div><div class="condition-body">Neuropathic pain with areas of numbness and loss of sensation throughout the body. Burning, stabbing, aching, and numbness can occur simultaneously. The pain is real and often severe — the Existential Scale in this app reflects her actual experience, not exaggeration.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Hyperlipidemia</span><span class="condition-system">Metabolic</span></div><div class="condition-body">Elevated blood lipids diagnosed 2016. Managed with Lipitor (Atorvastatin) 20mg nightly. Relevant in the context of cardiovascular risk alongside her cardiac history.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Hypertension</span><span class="condition-system">Cardiovascular</span></div><div class="condition-body">Managed with Losartan 50mg daily and Spironolactone 25mg daily. Hold Losartan if SBP &lt; 100 or DBP &lt; 60. Hold Spironolactone with low BP, GI upset, or dehydration.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Hypothyroidism</span><span class="condition-system">Endocrine</span></div><div class="condition-body">Diagnosed 2016. Managed with Synthroid (Levothyroxine) 75mcg daily, taken on an empty stomach at least 30 minutes before food. Do not skip — thyroid hormone affects virtually every system in the body.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Immunosuppression</span><span class="condition-system">Immune</span></div><div class="condition-body">Cellcept, Prednisone, and Cimzia significantly suppress the immune system. Infections that would be minor for most people can escalate quickly. History of cutaneous MRSA (2022) and sepsis/SIRS (2017). Take any sign of infection — fever, spreading redness, unusual wound — seriously.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Insomnia</span><span class="condition-system">Sleep</span></div><div class="condition-body">Chronic difficulty with sleep onset and maintenance. Managed with Ambien 10mg nightly and a nightly supplement stack including Melatonin, Magnesium Glycinate, and L-Theanine. CPAP also used for OSA. Hold Ambien if already very lethargic.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Legg-Calvé-Perthes Disease</span><span class="condition-system">Orthopedic</span></div><div class="condition-body">A childhood hip condition where the femoral head loses blood supply and deteriorates. Contributed to severe bilateral hip dysplasia diagnosed in adulthood (2016) and ultimately led to bilateral total hip replacements in 2017 and 2018.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Obstructive Sleep Apnea with O₂ &amp; CPAP</span><span class="condition-system">Sleep / Pulmonary</span></div><div class="condition-body">Airway obstruction during sleep causing apnea episodes. CPAP started February 2024 alongside home oxygen. Both are used nightly. CPAP compliance is important — it also helps with oxygen levels overnight. If CPAP is not worn, SpO₂ overnight may drop significantly.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Osteoarthritis</span><span class="condition-system">Joint</span></div><div class="condition-body">Degenerative joint disease causing cartilage breakdown and joint pain. Occurs on top of inflammatory arthritis (RA and RP), making joint pain multifactorial. Contributes to global joint pain and mobility limitations.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Osteoporosis &amp; Pathological Fractures</span><span class="condition-system">Bone</span></div><div class="condition-body">Bone density loss compounded by long-term steroid use. 4+ pathological fractures — bones that broke without significant trauma. Both 5th metatarsals have been surgically repaired. Reclast (IV infusion every 2 years) used for treatment. DEXA scans 2023 and 2024. Always take a fall or sudden bone pain seriously.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Paroxysmal Atrial Fibrillation</span><span class="condition-system">Cardiac</span></div><div class="condition-body">Cardiac ablation Feb 2022. Afib can recur — watch for rapid irregular heartbeat, palpitations, dizziness, or chest discomfort. Borderline pulmonary hypertension (PHTN) on 2024 echo. Abnormal right heart catheterization with exercise (2025) showing profound decompensation. Heart is under significant structural stress.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Psoriatic Arthritis</span><span class="condition-system">Autoimmune</span></div><div class="condition-body">Inflammatory arthritis associated with psoriasis, causing joint pain, swelling, and skin involvement. Overlaps significantly with her RA and RP diagnoses, contributing to the complexity of her systemic inflammatory picture.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Relapsing Polychondritis (RP)</span><span class="condition-system">Autoimmune</span></div><div class="condition-body">A rare autoimmune disease where the immune system attacks cartilage throughout the body — ears, nose, throat, airways, joints, and eyes. Ear swelling, throat issues, vertigo, tinnitus, and airway problems are all part of this. Flares can be triggered by illness, stress, or nothing at all. This is her primary diagnosis and drives most of her complexity. First episode 2017.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Seronegative Rheumatoid Arthritis</span><span class="condition-system">Autoimmune</span></div><div class="condition-body">Inflammatory arthritis affecting joints throughout the body. "Seronegative" means standard blood markers are negative — making it harder to get taken seriously, but it is real and significantly active. Diagnosed September 2019. Contributes to global joint pain, morning stiffness, and multiple failed biologic trials.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Steroid-Induced Myopathy</span><span class="condition-system">Muscle</span></div><div class="condition-body">Long-term prednisone use has caused significant muscle weakness. She may tire quickly, have difficulty rising from chairs or the floor, and have less strength than she appears to have. Physical tasks that look easy may be genuinely difficult.</div></div>
+
+  <!-- Surgical History -->
+  <div style="margin-top:22px;margin-bottom:10px;font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--navy);border-bottom:1px solid var(--border);padding-bottom:6px;">🔪 Surgical History</div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Left Total Hip Replacement</span><span class="condition-system">11/2017</span></div><div class="condition-body">Uncemented prosthetic left hip replacement due to severe bilateral hip dysplasia from Legg-Calvé-Perthes. Full recovery with non-weight bearing period. Prosthetic must be disclosed to all providers.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Right Total Hip Replacement</span><span class="condition-system">2/2018</span></div><div class="condition-body">Uncemented prosthetic right hip replacement, non-weight bearing x8 weeks. Completed the bilateral hip replacement series. Unstable spot noted in right femur prosthetic in 2024 — was non-weight bearing 6 weeks.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">ORIF Right 5th Metatarsal</span><span class="condition-system">6/2021</span></div><div class="condition-body">Open reduction internal fixation for displaced pathological fracture of the right 5th metatarsal. Non-weight bearing for 4 months total. First of two metatarsal surgeries.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Cardiac Ablation</span><span class="condition-system">2/2022</span></div><div class="condition-body">Ablation procedure for paroxysmal atrial fibrillation. Afib can still recur post-ablation — any palpitations, irregular heartbeat, or chest discomfort should be taken seriously.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Laparoscopic Cholecystectomy</span><span class="condition-system">9/2022</span></div><div class="condition-body">Emergency gallbladder removal for acute cholecystitis. Followed by blistering rash cultured for MRSA post-operatively. Significant anesthesia sensitivity documented at this surgery.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">ORIF Left 5th Metatarsal</span><span class="condition-system">10/2022</span></div><div class="condition-body">Open reduction internal fixation for acute-on-chronic fracture of the left 5th metatarsal. Followed by profound blistering rash after anesthesia — this is now a documented anesthesia sensitivity. Always flag before any procedure.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Hysterectomy / Oophorectomy / Sacrocolpopexy with Mesh</span><span class="condition-system">1/2023</span></div><div class="condition-body">Complete hysterectomy with oophorectomy and pelvic floor repair with mesh. Blistering rash on abdomen post-surgery, biopsy showed allergic dermatitis. Now on estradiol gel for hormone replacement. Mesh present — disclose to all providers.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Tunneled Port Placement</span><span class="condition-system">3/2023</span></div><div class="condition-body">Tunneled central venous port placed for infusion access. Port is present and active — disclose to all providers and nursing staff before any IV access attempts. Do not use peripheral IV if port is accessible and patient consents.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Left Leg Venous Laser Ablation with Chemical Injection</span><span class="condition-system">5/2023</span></div><div class="condition-body">Laser ablation and sclerotherapy for left leg venous insufficiency. Managed ongoing edema and venous reflux. Lasix PRN continues for fluid management.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Prosthetic Disc Insertion ×2 (C5–C7)</span><span class="condition-system">4/2024</span></div><div class="condition-body">Cervical disc replacement at C5–C7 for cervical disc disease. Experienced acute hypoxia (SpO₂ in 70s) post-operatively — this is when home oxygen was initiated. Prosthetic cervical discs must be disclosed to all providers, particularly before any MRI or surgical procedure.</div></div>
+
+  <div class="condition-card"><div class="condition-header" onclick="toggleCondition(this)"><span class="condition-name">Left 5th Metatarsal Hardware Removal with Bone Graft</span><span class="condition-system">8/2026</span></div><div class="condition-body">Removal of hardware from prior ORIF (10/2022) with bone grafting due to non-union or hardware complication. Most recent surgical procedure. Flag anesthesia sensitivity to all providers — documented history of profound blistering rash post-anesthesia. Disclose full surgical history and allergies before any intervention.</div></div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SYSTEMS — BODY SYSTEMS REVIEW                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="systems">
+  <h2 class="section-title">Body Systems Review</h2>
+  <p class="section-subtitle">Symptoms and history organized by organ system — compiled from years of review-of-systems notes. Tap each to expand.</p>
+
+  <!-- Rheumatologic -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🔬 Rheumatologic / Autoimmune</span>
+      <span class="condition-system" style="background:var(--terracotta-light);color:var(--terracotta)">Primary Dx</span>
+    </div>
+    <div class="condition-body">
+      Diagnosed September 2019 (Relapsing Polychondritis + Seronegative RA) after recurrent ear-inflammation episodes throughout 2019. Started on Prednisone 40mg + Methotrexate. Genetic autoinflammatory workup with Dr. Beck, NYU Langone (8/2025).
+      <div style="margin-top:10px;padding:8px 12px;background:#fff3cd;border-radius:8px;font-size:0.83rem;color:#7a5a10;border-left:3px solid var(--gold)">
+        <strong>Prednisone:</strong> Continuous since 2019 — range 5mg (low) to 60mg (high). Currently variable dose daily.
+      </div>
+      <div style="margin-top:12px;padding:12px;background:var(--cream);border-radius:10px;border-left:3px solid var(--terracotta)">
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--terracotta);margin-bottom:8px">Treatment Sequence</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2019</span><span style="color:var(--text-soft)">MTX (Methotrexate) started with Prednisone at diagnosis</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">3/2020</span><span style="color:var(--text-soft)">Plaquenil started → stopped 7/2020</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">7/2020</span><span style="color:var(--text-soft)">Humira started → stopped 1/2021</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">1/2021</span><span style="color:var(--text-soft)">Inflectra/Infliximab → increased 10/2021 → stopped 10/2023</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">10/2023</span><span style="color:var(--text-soft)">Actemra started → stopped 2/2024</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2/2024</span><span style="color:var(--text-soft)">Simponi started → Rinvoq trialed · MTX stopped · Cellcept started</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2025</span><span style="color:var(--text-soft)">Cimzia 200mg added</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2026</span><span style="color:var(--text-soft)">Cimzia increased to 400mg (2 injections every other Friday)</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--teal-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--teal)">Current</span><span style="color:var(--navy);font-weight:600">Cellcept 3g + Cimzia 400mg + Prednisone (variable)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Neurological -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🧠 Neurological</span>
+      <span class="condition-system" style="background:var(--lavender-light);color:var(--lavender)">Chronic</span>
+    </div>
+    <div class="condition-body">
+      Brain fog, fatigue, expressive aphasia, band-like headaches at the crown, right-sided icepick migraines, persistent vertigo, tinnitus, persistent left eyelid twitch. October 2020: fall with head laceration.
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2024</span><span style="color:var(--text-soft)">MRI head and neck: compressed C5 and C6 → cervical disc replacement (C5–C7) performed 4/2024</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2024–25</span><span style="color:var(--text-soft)">Headache trials: Qulipta (trialed, failed) · Nurtec (trialed, failed)</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--teal-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--teal)">Current</span><span style="color:var(--navy);font-weight:600">Tegretol (Carbamazepine) 200mg twice daily for headache management</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eyes -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">👁️ Eyes</span>
+      <span class="condition-system" style="background:var(--teal-light);color:var(--teal)">2013–present</span>
+    </div>
+    <div class="condition-body">
+      Scleritis, left eye — two episodes (2013, 2015), both treated with steroid drops. Ophthalmologist-observed right eye inflammation during the 2017 ear-swelling episode.
+      <div style="margin-top:10px;padding:10px;background:var(--teal-light);border-radius:8px;font-size:0.83rem;color:#2e6b66">
+        ⚠️ Ocular inflammation is a recognized feature of Relapsing Polychondritis — any recurrence warrants prompt ophthalmology referral.
+      </div>
+    </div>
+  </div>
+
+  <!-- ENT -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">👂 ENT / Cartilage</span>
+      <span class="condition-system" style="background:var(--terracotta-light);color:var(--terracotta)">Since 2017</span>
+    </div>
+    <div class="condition-body">
+      Ear drainage, mouth ulcers, nasal ulcers, facial inflammation, intermittent throat pain and swallowing difficulty (since 8/2020), multiple episodes of laryngitis, subglottic inflammation observed.
+      <div style="margin-top:10px;padding:10px;background:var(--cream);border-radius:8px;font-size:0.83rem;color:var(--text-soft)">
+        Recurrent bilateral ear inflammation with tinnitus, drainage, vertigo, and acute hearing loss (Jan/Mar/Apr 2019) — this cluster preceded the September 2019 RP/RA diagnosis. Perforated eardrum with inner/outer ear infection (11/2023). Auricular swelling and redness has been photographically tracked from 2017 through 2025 and is the hallmark presentation of her RP.
+      </div>
+    </div>
+  </div>
+
+  <!-- Cardiovascular -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">❤️ Cardiovascular</span>
+      <span class="condition-system" style="background:var(--red-light);color:var(--red)">2019–2025</span>
+    </div>
+    <div class="condition-body">
+      Atypical bradycardia, no murmur, chronic venous insufficiency with history of 4+ pitting edema to the knee. EF 55%.
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">11/2021</span><span style="color:var(--text-soft)">ED: AFib, D-dimer 1300, CT negative for PE</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2/2022</span><span style="color:var(--text-soft)">Cardiac ablation for paroxysmal AFib</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2024</span><span style="color:var(--text-soft)">Echo: borderline pulmonary hypertension</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--red-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--red)">1/2025</span><span style="color:var(--text-soft)">Right heart cath: PHTN with profound decompensation on exercise — retesting at altitude recommended</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--red-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--red)">2/2025</span><span style="color:var(--text-soft)">ED: HR 60s, BP 80s — sepsis ruled out, restarted O₂</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--red-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--red)">2025</span><span style="color:var(--text-soft)">MRI, CT, and V/Q scan: possible pulmonary hemorrhage vs. obstruction of left superior pulmonary vein · Significant left V/Q mismatch identified</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--sage-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--sage)">5/2026</span><span style="color:var(--text-soft)">Repeat right heart cath: pulmonary vein obstruction ruled out · EF 55%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pulmonary -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🫁 Pulmonary</span>
+      <span class="condition-system" style="background:var(--teal-light);color:var(--teal)">2023–present</span>
+    </div>
+    <div class="condition-body">
+      Persistent worsening shortness of breath, transient upper-airway expiratory wheeze, intermittent SpO₂ drops, intermittent hypoxia requiring supplemental O₂.
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2023</span><span style="color:var(--text-soft)">PFT abnormal · Dynamic CT normal · Bronchoscopy normal</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">2024</span><span style="color:var(--text-soft)">Dynamic CT normal · Post-surgical acute hypoxia (SpO₂ in 70s) → home O₂ initiated</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--border);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;white-space:nowrap;color:var(--text-soft)">6/2024</span><span style="color:var(--text-soft)">6-minute walk test: SpO₂ 89% at UPenn</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--sage-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--sage)">3/2025</span><span style="color:var(--text-soft)">PFT normalized</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;font-size:0.83rem"><span style="background:var(--red-light);border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:700;white-space:nowrap;color:var(--red)">11/2025</span><span style="color:var(--text-soft)">Extensive cardiopulmonary workup: left V/Q mismatch (no PE) · Exercise tolerance testing showed early anaerobic threshold with no O₂ recruitment — mechanism of dyspnea remains under investigation</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GI -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🍽️ GI / Hepatic</span>
+      <span class="condition-system" style="background:var(--gold-light);color:#7a5a10">2022</span>
+    </div>
+    <div class="condition-body">
+      Increased liver enzymes, intermittent nausea. Acute cholecystitis requiring laparoscopic cholecystectomy (9/2022). Liver enzymes and nausea continue as recurring concerns in the context of her medication burden — Cellcept, Prednisone, and a large supplement stack all carry hepatic considerations.
+    </div>
+  </div>
+
+  <!-- GU / Renal -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🩸 Genitourinary / Renal</span>
+      <span class="condition-system">Ongoing</span>
+    </div>
+    <div class="condition-body">
+      Elevated BUN &amp; creatinine, symptomatic UTIs occurring with disease flares. Bladder suspension with mesh performed alongside the January 2023 hysterectomy/sacrocolpopexy. Ultrasound showed ureteral scarring — ongoing monitoring warranted.
+    </div>
+  </div>
+
+  <!-- Gynecologic -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🌸 Gynecologic</span>
+      <span class="condition-system" style="background:var(--lavender-light);color:var(--lavender)">2021–2023</span>
+    </div>
+    <div class="condition-body">
+      P3G2. Abnormal Pap + HPV (2021) → five cervical biopsies + LEEP → CIN4 with clean margins → IUD placed for hormone control. Hysterectomy with bilateral oophorectomy and mesh sacrocolpopexy (1/2023) — now surgically menopausal, managed with estradiol gel 1mg daily.
+    </div>
+  </div>
+
+  <!-- Musculoskeletal -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🦴 Musculoskeletal</span>
+      <span class="condition-system" style="background:var(--terracotta-light);color:var(--terracotta)">4 path. fractures</span>
+    </div>
+    <div class="condition-body">
+      Significant global joint pain — frequent use of assistive devices (cane, wheelchair, electric scooter). Bilateral hip dysplasia (Legg-Calvé-Perthes) → bilateral total hip replacements (11/2017, 2/2018).
+      <div style="margin-top:10px;padding:10px;background:var(--cream);border-radius:8px;font-size:0.83rem;color:var(--text-soft)">
+        Four pathological metatarsal fractures (5th ×2, 3rd, 4th — 2021 through 2025), each requiring surgical fixation. Left rib fracture (2025). DEXA normal 2023 and 2024, maintained on Reclast. Unstable right femoral prosthetic noted 2/2024 — six weeks non-weight-bearing.
+      </div>
+    </div>
+  </div>
+
+  <!-- Dermatologic -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">🩹 Dermatologic / Immune</span>
+      <span class="condition-system" style="background:var(--gold-light);color:#7a5a10">Since 2009</span>
+    </div>
+    <div class="condition-body">
+      Frequent skin rashes since 2009, increased sensitivity to chemicals. Papular rash (2010, trunk/thighs, lasted 1+ year — cultures and IgG/IgM negative, CRP positive).
+      <div style="margin-top:10px;padding:10px;background:#fff3cd;border-radius:8px;font-size:0.83rem;color:#7a5a10;border-left:3px solid var(--gold)">
+        ⚠️ Documented anesthesia sensitivity: profound blistering rash after multiple surgeries (2022–2024). Biopsy-confirmed allergic dermatitis (2023). Cutaneous MRSA (2022). Stage 3 pressure wound, right heel (9/2020). Cleaning-solution skin reaction (2024).
+      </div>
+    </div>
+  </div>
+
+  <!-- Endocrine -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">⚖️ Endocrine / Metabolic</span>
+      <span class="condition-system" style="background:var(--sage-light);color:var(--sage)">Weight trend</span>
+    </div>
+    <div class="condition-body">
+      Hypothyroidism and hyperlipidemia both diagnosed 2016 (managed with Synthroid and Lipitor).
+      <div style="margin-top:10px;padding:10px;background:var(--cream);border-radius:8px">
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--sage);margin-bottom:8px">Weight Trend</div>
+        <div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--navy)">122</div><div style="font-size:0.62rem;color:var(--text-soft)">2019</div></div>
+          <div style="color:var(--border);padding-bottom:10px">→</div>
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--navy)">147</div><div style="font-size:0.62rem;color:var(--text-soft)">2020</div></div>
+          <div style="color:var(--border);padding-bottom:10px">→</div>
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--navy)">180</div><div style="font-size:0.62rem;color:var(--text-soft)">2021</div></div>
+          <div style="color:var(--border);padding-bottom:10px">→</div>
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--terracotta)">217</div><div style="font-size:0.62rem;color:var(--text-soft)">2023</div></div>
+          <div style="color:var(--border);padding-bottom:10px">→</div>
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--terracotta)">223</div><div style="font-size:0.62rem;color:var(--text-soft)">2024</div></div>
+          <div style="color:var(--border);padding-bottom:10px">→</div>
+          <div style="text-align:center"><div style="font-size:0.9rem;font-weight:700;color:var(--sage)">180</div><div style="font-size:0.62rem;color:var(--text-soft)">2025</div></div>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-soft);margin-top:8px">The 2024→2025 drop from 223 to 180 lbs is notable — worth discussing with your care team in the context of concurrent cardiopulmonary workup.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pain Distribution -->
+  <div class="condition-card">
+    <div class="condition-header" onclick="toggleCondition(this)">
+      <span class="condition-name">📍 Pain Distribution</span>
+      <span class="condition-system" style="background:var(--terracotta-light);color:var(--terracotta)">Body map</span>
+    </div>
+    <div class="condition-body">
+      Widespread pain mapped across face/jaw, neck, chest/sternum, lower back and sacrum, bilateral hips/groin, hands, and feet — with numbness noted bilaterally at hands and feet.
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <div style="padding:8px 10px;background:var(--cream);border-radius:8px;font-size:0.8rem;color:var(--text-soft)"><strong style="color:var(--navy);display:block;margin-bottom:3px">🔥 Burning</strong>Limbs, lower back, feet</div>
+        <div style="padding:8px 10px;background:var(--cream);border-radius:8px;font-size:0.8rem;color:var(--text-soft)"><strong style="color:var(--navy);display:block;margin-bottom:3px">🫀 Aching</strong>Face, hands, feet</div>
+        <div style="padding:8px 10px;background:var(--cream);border-radius:8px;font-size:0.8rem;color:var(--text-soft)"><strong style="color:var(--navy);display:block;margin-bottom:3px">⚡ Stabbing</strong>Hip / groin</div>
+        <div style="padding:8px 10px;background:var(--cream);border-radius:8px;font-size:0.8rem;color:var(--text-soft)"><strong style="color:var(--navy);display:block;margin-bottom:3px">🤏 Pinching</strong>Chest, upper back</div>
+        <div style="padding:8px 10px;background:var(--cream);border-radius:8px;font-size:0.8rem;color:var(--text-soft)"><strong style="color:var(--navy);display:block;margin-bottom:3px">🔪 Sharp</strong>Feet</div>
+        <div style="padding:8px 10px;background:var(--lavender-light);border-radius:8px;font-size:0.8rem;color:var(--lavender)"><strong style="display:block;margin-bottom:3px">〰️ Numbness</strong>Hands &amp; feet bilaterally</div>
+      </div>
+      <div style="margin-top:8px;font-size:0.8rem;color:var(--text-soft);font-style:italic">Pattern consistent with overlapping seronegative RA, osteoarthritis, and steroid-related neuropathic pain.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PHOTOS GALLERY                                        -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="photos">
+  <h2 class="section-title">Photo Gallery 📷</h2>
+  <p class="section-subtitle">All journal photos in one place. Add historical photos anytime — date and context always recorded.</p>
+
+  <!-- Upload card -->
+  <div class="gallery-upload-card">
+    <div class="jblock-header" style="margin-bottom:12px">
+      <div class="jblock-icon icon-teal">📸</div>
+      <div><div class="jblock-title">Add Photos</div></div>
+    </div>
+    <div class="gallery-upload-area" onclick="triggerGalleryUpload()">
+      <div class="upload-big-icon">🖼️</div>
+      <p><strong>Tap to add photos</strong><br>JPG or PNG · Multiple allowed</p>
+    </div>
+    <input type="file" id="gallery-img-input" accept="image/jpeg,image/png,image/jpg" multiple onchange="handleGalleryImages(event)">
+    <div class="gallery-pending-previews" id="gallery-pending-previews"></div>
+    <div class="gallery-meta-row">
+      <div class="gallery-meta-field">
+        <div class="gallery-meta-label">Date</div>
+        <input class="gallery-meta-input" type="date" id="gallery-date">
+      </div>
+      <div class="gallery-meta-field">
+        <div class="gallery-meta-label">Category</div>
+        <select class="gallery-meta-input" id="gallery-category">
+          <option value="">— Select —</option>
+          <option value="Skin / Rash">Skin / Rash</option>
+          <option value="Ear / Cartilage">Ear / Cartilage</option>
+          <option value="Swelling / Edema">Swelling / Edema</option>
+          <option value="Eyes">Eyes</option>
+          <option value="Face / Head">Face / Head</option>
+          <option value="Joints">Joints</option>
+          <option value="Wound / Injury">Wound / Injury</option>
+          <option value="Vitals / Equipment">Vitals / Equipment</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+    </div>
+    <textarea class="gallery-caption-input" id="gallery-caption" placeholder="Caption — what is this photo documenting?"></textarea>
+    <button class="gallery-save-btn" onclick="saveGalleryPhotos()">Save to Gallery</button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="gallery-filters">
+    <button class="gallery-filter-btn active" onclick="filterGallery('all', this)">All</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Skin / Rash', this)">Skin</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Ear / Cartilage', this)">Ear</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Swelling / Edema', this)">Swelling</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Eyes', this)">Eyes</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Face / Head', this)">Face</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Joints', this)">Joints</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Wound / Injury', this)">Wound</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('Vitals / Equipment', this)">Vitals</button>
+    <button class="gallery-filter-btn" onclick="filterGallery('journal', this)">From Journal</button>
+  </div>
+
+  <div class="gallery-section-title">Gallery <span class="gallery-count" id="gallery-count"></span></div>
+  <div class="gallery-grid" id="gallery-grid">
+    <div class="gallery-empty">No photos yet. Add one above or log journal entries with photos.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section" id="comfort">
+  <h2 class="section-title">Comfort &amp; Cozy 🥄</h2>
+  <p class="section-subtitle">A menu of small things that help. Low spoons welcome. Pick one. Pick three. No wrong answers.</p>
+
+  <div class="quote-box">"Spoons are data. You are more. Every small act of self-care is a spoon well spent — and you deserve every one."</div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🛋️ Body Comfort <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Heating pad</li>
+      <li><span class="cozy-bullet"></span>Ice pack</li>
+      <li><span class="cozy-bullet"></span>Warm blanket burrito</li>
+      <li><span class="cozy-bullet"></span>Compression socks</li>
+      <li><span class="cozy-bullet"></span>Weighted blanket</li>
+      <li><span class="cozy-bullet"></span>Neck massager</li>
+      <li><span class="cozy-bullet"></span>Foam roller</li>
+      <li><span class="cozy-bullet"></span>TENS unit</li>
+      <li><span class="cozy-bullet"></span>Epsom salt bath</li>
+      <li><span class="cozy-bullet"></span>Elevate feet</li>
+      <li><span class="cozy-bullet"></span>Stretch for 5 minutes</li>
+      <li><span class="cozy-bullet"></span>Gentle yoga</li>
+      <li><span class="cozy-bullet"></span>Fresh pajamas</li>
+      <li><span class="cozy-bullet"></span>Humidifier</li>
+      <li><span class="cozy-bullet"></span>Cooling fan</li>
+      <li><span class="cozy-bullet"></span>Magnesium lotion</li>
+      <li><span class="cozy-bullet"></span>Hand warmers</li>
+      <li><span class="cozy-bullet"></span>Warm shower</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🌬️ Breathing &amp; Nervous System <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Box breathing</li>
+      <li><span class="cozy-bullet"></span>4-7-8 breathing</li>
+      <li><span class="cozy-bullet"></span>Guided meditation</li>
+      <li><span class="cozy-bullet"></span>Progressive muscle relaxation</li>
+      <li><span class="cozy-bullet"></span>Calm music</li>
+      <li><span class="cozy-bullet"></span>White noise</li>
+      <li><span class="cozy-bullet"></span>Nature sounds</li>
+      <li><span class="cozy-bullet"></span>Aromatherapy</li>
+      <li><span class="cozy-bullet"></span>Sit outside for 10 minutes</li>
+      <li><span class="cozy-bullet"></span>Hydrate</li>
+      <li><span class="cozy-bullet"></span>Electrolytes</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🍵 Nourishment <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Favorite tea</li>
+      <li><span class="cozy-bullet"></span>Protein snack</li>
+      <li><span class="cozy-bullet"></span>Smoothie</li>
+      <li><span class="cozy-bullet"></span>Popsicle</li>
+      <li><span class="cozy-bullet"></span>Ginger for nausea</li>
+      <li><span class="cozy-bullet"></span>Small comfort meal</li>
+      <li><span class="cozy-bullet"></span>Favorite mug</li>
+      <li><span class="cozy-bullet"></span>Extra hydration</li>
+      <li><span class="cozy-bullet"></span>Warm soup</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🧠 Mental Reset <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Read one chapter</li>
+      <li><span class="cozy-bullet"></span>Audiobook</li>
+      <li><span class="cozy-bullet"></span>Comfort TV</li>
+      <li><span class="cozy-bullet"></span>Coloring</li>
+      <li><span class="cozy-bullet"></span>Journal</li>
+      <li><span class="cozy-bullet"></span>Gratitude list</li>
+      <li><span class="cozy-bullet"></span>Word puzzle</li>
+      <li><span class="cozy-bullet"></span>Pet an animal</li>
+      <li><span class="cozy-bullet"></span>Watch birds</li>
+      <li><span class="cozy-bullet"></span>Light a candle</li>
+      <li><span class="cozy-bullet"></span>Declutter one small space</li>
+      <li><span class="cozy-bullet"></span>Sit in silence</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">💛 Emotional Care <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Call a friend</li>
+      <li><span class="cozy-bullet"></span>Hug someone</li>
+      <li><span class="cozy-bullet"></span>Hug your dog</li>
+      <li><span class="cozy-bullet"></span>Cry if needed</li>
+      <li><span class="cozy-bullet"></span>Self-compassion reminder</li>
+      <li><span class="cozy-bullet"></span>Listen to favorite playlist</li>
+      <li><span class="cozy-bullet"></span>Watch funny videos</li>
+      <li><span class="cozy-bullet"></span>Read encouraging notes</li>
+      <li><span class="cozy-bullet"></span>Celebrate a tiny win</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🌿 Environment <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Open the windows</li>
+      <li><span class="cozy-bullet"></span>Dim the lights</li>
+      <li><span class="cozy-bullet"></span>Fresh sheets</li>
+      <li><span class="cozy-bullet"></span>Tidy bedside table</li>
+      <li><span class="cozy-bullet"></span>Essential oils</li>
+      <li><span class="cozy-bullet"></span>Diffuser</li>
+      <li><span class="cozy-bullet"></span>Favorite blanket</li>
+      <li><span class="cozy-bullet"></span>Change rooms</li>
+    </ul>
+  </div>
+
+  <div class="cozy-section">
+    <div class="cozy-header" onclick="toggleCozy(this)">🎨 Tiny Joys <span>▾</span></div>
+    <ul class="cozy-list">
+      <li><span class="cozy-bullet"></span>Buy flowers</li>
+      <li><span class="cozy-bullet"></span>Water the plants</li>
+      <li><span class="cozy-bullet"></span>Bird feeder check</li>
+      <li><span class="cozy-bullet"></span>Sit in the sun</li>
+      <li><span class="cozy-bullet"></span>Bubble bath</li>
+      <li><span class="cozy-bullet"></span>Soft hoodie</li>
+      <li><span class="cozy-bullet"></span>Favorite perfume</li>
+      <li><span class="cozy-bullet"></span>Cup of coffee</li>
+      <li><span class="cozy-bullet"></span>Chocolate square</li>
+    </ul>
+  </div>
+
+  <div class="comfort-section-title" style="margin-top:20px">When You're Having a Bad Day</div>
+  <div class="comfort-card"><h4>🗣️ Words That Help</h4><ul><li>You are not a burden — caring for yourself is valid</li><li>"What do I need right now?" — then actually do it</li><li>You don't have to explain your pain to anyone</li><li>This too will shift, even if it doesn't pass</li></ul></div>
+  <div class="comfort-card"><h4>🚫 What Doesn't Help</h4><ul><li>Comparing today to better days</li><li>Pushing through when rest is what's needed</li><li>Apologizing for being sick</li><li>Minimizing with "at least it's not…"</li></ul></div>
+  <div class="comfort-card"><h4>💙 The Bigger Picture</h4><ul><li>You've been fighting since at least 2010 — 15+ years</li><li>You've had 14+ surgeries. You are still here.</li><li>Good days and bad days are both part of your story</li><li>Celebrate what you can do — it matters</li></ul></div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+// ── SPOONBOOK WIT ────────────────────────────────────
+const WIT_QUOTES = [
+  "Every spoon counts.",
+  "Track today. Thank future you.",
+  "Data is power. Rest is medicine.",
+  "Spooning my way through life.",
+  "Low spoons, high standards.",
+  "Buckle up. It's a bumpy ride.",
+  "Chronic, but make it funny.",
+  "Running on sarcasm & meds.",
+  "Delay, detour, survive, repeat.",
+  "Not all who wander are lost.",
+  "Today's goal: Survive. Bonus goal: Thrive.",
+  "Surviving, not thriving — and that's enough.",
+  "Be gentle with yourself today.",
+  "You showed up. That counts.",
+  "Small wins are still wins.",
+  "Rest is not giving up. Rest is strategy.",
+  "Your body is doing its best.",
+  "Pain is not weakness leaving the body. Pain is just pain.",
+  "One spoon at a time.",
+  "You are more than your diagnosis.",
+];
+document.getElementById('wit-quote').textContent = WIT_QUOTES[Math.floor(Math.random() * WIT_QUOTES.length)];
+
+// ── SPOON METER ──────────────────────────────────────
+let selSpoons = null;
+function selectSpoon(n) {
+  selSpoons = n;
+  const btns = document.querySelectorAll('.spoon-btn');
+  btns.forEach((btn, i) => {
+    btn.className = 'spoon-btn';
+    if (i < n) btn.classList.add('spoon-active');
+  });
+  const msgs = ['','One spoon. Honor it carefully.','Two spoons. Choose wisely.','Three spoons. Pace yourself.','Four spoons. A modest day.','Five spoons. Middle ground.','Six spoons. Decent energy.','Seven spoons. Good day!','Eight spoons. Strong day!','Nine spoons. Really good!','Ten spoons. Excellent!','Eleven spoons. Amazing!','Twelve spoons! 🌈 Utopia energy!'];
+  document.getElementById('spoon-label').innerHTML = `<strong style="color:var(--teal)">${n} spoon${n>1?'s':''}</strong> today — ${msgs[n]}`;
+}
+
+// ── NAV ──────────────────────────────────────────────
+const NAV_LABELS = ['home','scale','emergency','meds','conditions','systems','photos','comfort'];
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn')[NAV_LABELS.indexOf(id)].classList.add('active');
+  window.scrollTo(0,0);
+  if (id==='home') renderEntries();
+  if (id==='photos') { initGalleryDate(); renderGallery(); }
+}
+
+// ── SCALE CARDS ──────────────────────────────────────
+function toggleCard(n) { document.getElementById('card-'+n).classList.toggle('open'); }
+function toggleCondition(h) { h.parentElement.classList.toggle('open'); }
+
+// ── COZY SECTIONS ────────────────────────────────────
+function toggleCozy(header) {
+  const list = header.nextElementSibling;
+  const chevron = header.querySelector('span');
+  const open = list.classList.contains('open');
+  list.classList.toggle('open', !open);
+  chevron.textContent = open ? '▾' : '▴';
+}
+
+// ── MEDS FILTER ──────────────────────────────────────
+function filterMeds(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.med-card').forEach(c => {
+    c.classList.toggle('hidden', type !== 'all' && c.dataset.type !== type);
+  });
+  document.querySelectorAll('.med-group-label').forEach(label => {
+    let next = label.nextElementSibling; let vis = false;
+    while (next && !next.classList.contains('med-group-label')) {
+      if (next.classList.contains('med-card') && !next.classList.contains('hidden')) vis = true;
+      next = next.nextElementSibling;
+    }
+    label.style.display = vis ? '' : 'none';
+  });
+}
+
+// ── JOURNAL STATE ────────────────────────────────────
+const ES_LABELS = {
+  1:'🌈 Utopia — I could conquer the world today.',
+  2:'✨ Sparkly — Feeling surprisingly human.',
+  3:'😊 Doing Okay — I\'ll take it.',
+  4:'😐 Meh — Functional-ish.',
+  5:'☕ Running on Caffeine & Hope',
+  6:'🫠 Questionable Choices',
+  7:'🌧️ The Wheels Are Wobbling',
+  8:'🚨 Dumpster Fire',
+  9:'💀 Absolute Clusterfuck',
+  10:'🖕 Fuck'
+};
+const ES_COLORS = {1:'#9A90BC',2:'#6FAFA9',3:'#5E8C6A',4:'#7a9e8e',5:'#D8A84A',6:'#d4884a',7:'#C97567',8:'#c47a7a',9:'#b85252',10:'#203A55'};
+const PAIN_LABELS = {0:'No hurt',2:'Hurts little bit',4:'Hurts little more',6:'Hurts even more',8:'Hurts whole lot',10:'Hurts worst'};
+
+let selES = null, selPain = null, selFlare = null, selO2 = null, selSleep = null, selMood = null, pendingImages = [];
+
+function selectES(n) {
+  selES = n;
+  document.querySelectorAll('.es-btn').forEach(b => { b.className = b.className.replace(/ selected/,''); });
+  document.querySelector('.es-'+n).classList.add('selected');
+  document.getElementById('es-label').textContent = ES_LABELS[n] || '';
+}
+
+function selectPain(n) {
+  selPain = n;
+  document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function selectRadio(group, val) {
+  if (group==='flare') {
+    selFlare = val;
+    document.getElementById('flare-yes').className = 'radio-opt' + (val==='yes' ? ' selected-yes' : '');
+    document.getElementById('flare-no').className  = 'radio-opt' + (val==='no'  ? ' selected-no'  : '');
+  } else {
+    selO2 = val;
+    document.getElementById('o2-yes').className = 'radio-opt' + (val==='yes' ? ' selected-yes' : '');
+    document.getElementById('o2-no').className  = 'radio-opt' + (val==='no'  ? ' selected-no'  : '');
+  }
+}
+
+function selectSleep(el, emoji, label) {
+  selSleep = {emoji, label};
+  document.querySelectorAll('.sleep-face').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectMood(el) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selMood = el.textContent.trim();
+}
+
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+// ── WEATHER ──────────────────────────────────────────
+const WMO_ICON = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',61:'🌧',71:'🌨',80:'🌦',95:'⛈',99:'⛈'};
+function wmoIcon(code) {
+  for (const k of Object.keys(WMO_ICON).sort((a,b)=>b-a)) { if (code >= +k) return WMO_ICON[k]; }
+  return '🌡️';
+}
+function aqiLabel(aqi) {
+  if (aqi<=50) return aqi+' Good';
+  if (aqi<=100) return aqi+' Mod';
+  if (aqi<=150) return aqi+' USG';
+  return aqi+' Poor';
+}
+async function loadWeather() {
+  if (!navigator.geolocation) { document.getElementById('weather-loading').textContent = '📍 Location unavailable'; return; }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const {latitude:lat, longitude:lon} = pos.coords;
+    try {
+      const [wx, aq] = await Promise.all([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,surface_pressure,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph`).then(r=>r.json()),
+        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,european_aqi`).then(r=>r.json())
+      ]);
+      const c = wx.current;
+      document.getElementById('w-temp').textContent = Math.round(c.temperature_2m)+'°';
+      document.getElementById('w-feels').textContent = Math.round(c.apparent_temperature)+'°';
+      document.getElementById('w-humidity').textContent = c.relative_humidity_2m+'%';
+      const inHg = (c.surface_pressure * 0.02953).toFixed(2);
+      document.getElementById('w-pressure').textContent = inHg;
+      document.getElementById('w-icon').textContent = wmoIcon(c.weather_code);
+      const aqi = aq.current?.us_aqi ?? '--';
+      document.getElementById('w-aqi').textContent = aqi !== '--' ? aqiLabel(aqi) : '--';
+      document.getElementById('w-pollen').textContent = '—';
+      document.getElementById('w-location').textContent = `${lat.toFixed(2)}°N ${Math.abs(lon).toFixed(2)}°W`;
+      document.getElementById('weather-loading').style.display = 'none';
+      document.getElementById('weather-data').style.display = 'block';
+    } catch { document.getElementById('weather-loading').textContent = '⚠ Weather unavailable'; }
+  }, () => { document.getElementById('weather-loading').textContent = '📍 Location access denied'; });
+}
+loadWeather();
+
+// ── IMAGES ───────────────────────────────────────────
+function handleImages(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => { pendingImages.push({dataUrl:ev.target.result, name:file.name}); renderPreviews(); };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+function renderPreviews() {
+  const c = document.getElementById('img-previews');
+  c.innerHTML = pendingImages.map((img,i) => `<div class="img-preview-wrap"><img src="${img.dataUrl}"><button class="img-remove" onclick="removeImage(${i})">✕</button></div>`).join('');
+}
+function removeImage(i) { pendingImages.splice(i,1); renderPreviews(); }
+
+// ── SAVE ─────────────────────────────────────────────
+function saveEntry() {
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    spoons: selSpoons,
+    es: selES,
+    pain: selPain,
+    flare: selFlare,
+    o2: selO2,
+    sleepHours: document.getElementById('sleep-hours').value || null,
+    sleepQuality: selSleep,
+    mood: selMood,
+    bpSys: document.getElementById('bp-sys').value || null,
+    bpDia: document.getElementById('bp-dia').value || null,
+    weight: document.getElementById('weight').value || null,
+    hrv: document.getElementById('hrv').value || null,
+    spo2Avg: document.getElementById('spo2-avg').value || null,
+    spo2Low: document.getElementById('spo2-low').value || null,
+    sleepScore: document.getElementById('sleep-score').value || null,
+    cpapScore: document.getElementById('cpap-score').value || null,
+    cpapHours: document.getElementById('cpap-hours').value || null,
+    meds: Array.from(document.querySelectorAll('.chip-med.selected')).map(c=>c.textContent.trim()),
+    symptoms: Array.from(document.querySelectorAll('.chip-symptom.selected')).map(c=>c.textContent.trim()),
+    therapy: Array.from(document.querySelectorAll('.chip-therapy.selected')).map(c=>c.textContent.trim()),
+    factors: Array.from(document.querySelectorAll('.chip-factor.selected')).map(c=>c.textContent.trim()),
+    activity: Array.from(document.querySelectorAll('.chip-activity.selected')).map(c=>c.textContent.trim()),
+    note: document.getElementById('journal-note').value.trim(),
+    images: [...pendingImages]
+  };
+  const entries = getEntries();
+  entries.unshift(entry);
+  localStorage.setItem('lauriJournal', JSON.stringify(entries));
+  resetForm();
+  renderEntries();
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✓ Entry Saved'; btn.style.background = 'var(--sage)';
+  setTimeout(() => { btn.textContent = 'Save Today\'s Entry'; btn.style.background = ''; }, 2200);
+
+  // Auto-sync and daily insight — non-blocking, won't affect save
+  setTimeout(() => { syncToCloud().catch(e => console.error(e)); }, 500);
+  setTimeout(() => { getDailyInsight(entry).catch(e => console.error(e)); }, 1000);
+}
+
+function resetForm() {
+  selES=null; selPain=null; selFlare=null; selO2=null; selSleep=null; selMood=null; selSpoons=null; pendingImages=[];
+  document.querySelectorAll('.spoon-btn').forEach(b => b.className='spoon-btn');
+  document.getElementById('spoon-label').textContent='Tap a spoon to set your count for today.';
+  document.querySelectorAll('.es-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+  ['flare-yes','flare-no','o2-yes','o2-no'].forEach(id => document.getElementById(id).className='radio-opt');
+  document.querySelectorAll('.sleep-face').forEach(f => f.classList.remove('selected'));
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('journal-note').value = '';
+  document.getElementById('img-previews').innerHTML = '';
+  document.getElementById('es-label').textContent = '';
+}
+
+// ── RENDER ENTRIES ───────────────────────────────────
+function getEntries() { try { return JSON.parse(localStorage.getItem('lauriJournal')||'[]'); } catch { return []; } }
+
+function renderEntries() {
+  const entries = getEntries();
+  const list = document.getElementById('entries-list');
+  if (!entries.length) { list.innerHTML='<div class="no-entries">No entries yet.</div>'; return; }
+  list.innerHTML = entries.map(e => {
+    const d = new Date(e.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const spoonBadge = e.spoons ? `<span style="display:inline-block;background:var(--teal-light);color:var(--teal);font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">🥄 ${e.spoons} spoon${e.spoons>1?'s':''}</span>` : '';
+    const esColor = e.es ? ES_COLORS[e.es] : '#9A90BC';
+    const esBadge = e.es ? `<span style="display:inline-block;background:${esColor};color:white;font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:5px">Scale ${e.es}</span>` : '';
+    const esText = e.es ? `<span style="font-size:0.78rem;color:var(--text-soft);vertical-align:middle">${ES_LABELS[e.es]}</span>` : '';
+    const painBadge = e.pain != null ? `<span style="display:inline-block;background:var(--terracotta-light);color:var(--terracotta);font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:4px">Pain ${e.pain}/10</span>` : '';
+    const vitals = [];
+    if (e.bpSys && e.bpDia) vitals.push(`<span class="vital-tag">BP <strong>${e.bpSys}/${e.bpDia}</strong></span>`);
+    if (e.hrv) vitals.push(`<span class="vital-tag">HRV <strong>${e.hrv}ms</strong></span>`);
+    if (e.spo2Avg) { const col=e.spo2Avg<90?'var(--red)':e.spo2Avg<94?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ avg <strong style="color:${col}">${e.spo2Avg}%</strong></span>`); }
+    if (e.spo2Low) { const col=e.spo2Low<88?'var(--red)':e.spo2Low<92?'var(--gold)':'var(--sage)'; vitals.push(`<span class="vital-tag">SpO₂ low <strong style="color:${col}">${e.spo2Low}%</strong></span>`); }
+    if (e.sleepScore) vitals.push(`<span class="vital-tag">Sleep Score <strong>${e.sleepScore}</strong></span>`);
+    if (e.cpapScore) vitals.push(`<span class="vital-tag">CPAP Score <strong>${e.cpapScore}</strong></span>`);
+    if (e.cpapHours) vitals.push(`<span class="vital-tag">CPAP <strong>${e.cpapHours}h</strong></span>`);
+    if (e.weight) vitals.push(`<span class="vital-tag">Wt <strong>${e.weight}lbs</strong></span>`);
+    if (e.sleepHours) vitals.push(`<span class="vital-tag">Sleep <strong>${e.sleepHours}h</strong></span>`);
+    if (e.o2==='yes') vitals.push(`<span class="vital-tag o2-tag">🫁 On O₂</span>`);
+    const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
+    const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
+    const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
+    const facChips = (e.factors||[]).map(s=>`<span class="entry-chip ec-factor">${s}</span>`).join('');
+    const actChips = (e.activity||[]).map(s=>`<span class="entry-chip ec-activity">${s}</span>`).join('');
+    const imgs = (e.images||[]).map(img=>`<img src="${img.dataUrl}" onclick="openLightbox('${img.dataUrl.replace(/'/g,"\\'")}'">`).join('');
+    return `<div class="entry-card ${e.flare==='yes'?'entry-flare':''}">
+      <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
+      ${e.flare==='yes'?'<div class="entry-flare-badge">🔥 FLARE</div>':''}
+      <div class="entry-date">${d}</div>
+      <div style="margin-bottom:4px">${spoonBadge}${esBadge}${esText}${painBadge}</div>
+      ${e.mood?`<div style="font-size:0.82rem;color:var(--lavender);margin-bottom:4px">${e.mood}</div>`:''}
+      ${e.sleepQuality?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.sleepQuality.emoji} Sleep: ${e.sleepQuality.label}</div>`:''}
+      ${vitals.length?`<div class="entry-vitals">${vitals.join('')}</div>`:''}
+      ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
+      ${e.note?`<div class="entry-note">${e.note}</div>`:''}
+      ${imgs?`<div class="entry-images">${imgs}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  localStorage.setItem('lauriJournal', JSON.stringify(getEntries().filter(e=>e.id!==id)));
+  renderEntries();
+}
+
+function exportEntries() {
+  const entries = getEntries();
+  if (!entries.length) { alert('No entries to export.'); return; }
+  let txt = "LAURI'S HEALTH JOURNAL\n" + new Date().toLocaleDateString() + "\n\n";
+  entries.forEach(e => {
+    const d = new Date(e.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    txt += '─'.repeat(42)+'\n'+d+'\n';
+    if (e.flare==='yes') txt += '🔥 FLARE DAY\n';
+    if (e.spoons) txt += `Spoons: ${e.spoons}\n`;
+    if (e.es) txt += `Existential Scale: ${e.es} — ${ES_LABELS[e.es]}\n`;
+    if (e.pain!=null) txt += `Pain: ${e.pain}/10\n`;
+    if (e.mood) txt += `Mood: ${e.mood}\n`;
+    if (e.sleepHours) txt += `Sleep: ${e.sleepHours}h`;
+    if (e.sleepQuality) txt += ` · Quality: ${e.sleepQuality.label}`;
+    if (e.sleepHours||e.sleepQuality) txt += '\n';
+    if (e.bpSys && e.bpDia) txt += `BP: ${e.bpSys}/${e.bpDia}\n`;
+    if (e.weight) txt += `Weight: ${e.weight}lbs\n`;
+    if (e.hrv) txt += `HRV: ${e.hrv}ms\n`;
+    if (e.spo2Avg) txt += `SpO₂ avg: ${e.spo2Avg}%\n`;
+    if (e.spo2Low) txt += `SpO₂ low: ${e.spo2Low}%\n`;
+    if (e.sleepScore) txt += `Sleep Score: ${e.sleepScore}\n`;
+    if (e.cpapScore) txt += `CPAP Score: ${e.cpapScore}\n`;
+    if (e.cpapHours) txt += `CPAP Hours: ${e.cpapHours}h\n`;
+    if (e.o2==='yes') txt += `On O₂: Yes\n`;
+    if (e.meds?.length) txt += `Meds: ${e.meds.join(', ')}\n`;
+    if (e.symptoms?.length) txt += `Symptoms: ${e.symptoms.join(', ')}\n`;
+    if (e.therapy?.length) txt += `Therapy: ${e.therapy.join(', ')}\n`;
+    if (e.factors?.length) txt += `Factors: ${e.factors.join(', ')}\n`;
+    if (e.activity?.length) txt += `Activity: ${e.activity.join(', ')}\n`;
+    if (e.note) txt += `Notes: ${e.note}\n`;
+    if (e.images?.length) txt += `Photos: ${e.images.length}\n`;
+    txt += '\n';
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download = 'lauri-health-journal.txt'; a.click();
+}
+
+// ── PHOTO GALLERY ────────────────────────────────────
+
+let galleryPending = [];
+let galleryFilter = 'all';
+let galleryDB = null;
+
+// Open IndexedDB for photo storage (much larger than localStorage)
+function openGalleryDB() {
+  return new Promise((resolve, reject) => {
+    if (galleryDB) { resolve(galleryDB); return; }
+    const req = indexedDB.open('SpoonbookGallery', 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('photos')) {
+        const store = db.createObjectStore('photos', { keyPath: 'id' });
+        store.createIndex('date', 'date', { unique: false });
+        store.createIndex('category', 'category', { unique: false });
+      }
+    };
+    req.onsuccess = e => { galleryDB = e.target.result; resolve(galleryDB); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getAllGalleryPhotos() {
+  const db = await openGalleryDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readonly');
+    const req = tx.objectStore('photos').getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function savePhotoToDB(photo) {
+  const db = await openGalleryDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readwrite');
+    const req = tx.objectStore('photos').put(photo);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deletePhotoFromDB(id) {
+  const db = await openGalleryDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readwrite');
+    const req = tx.objectStore('photos').delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function initGalleryDate() {
+  const d = document.getElementById('gallery-date');
+  if (d && !d.value) {
+    d.value = new Date().toISOString().split('T')[0];
+  }
+}
+
+function triggerGalleryUpload() {
+  document.getElementById('gallery-img-input').click();
+}
+
+function handleGalleryImages(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      galleryPending.push({ dataUrl: ev.target.result, name: file.name });
+      renderGalleryPending();
+    };
+    reader.onerror = () => alert('Could not read file: ' + file.name);
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderGalleryPending() {
+  const c = document.getElementById('gallery-pending-previews');
+  if (!c) return;
+  c.innerHTML = galleryPending.map((img, i) => `
+    <div class="gallery-pending-wrap">
+      <img src="${img.dataUrl}" alt="preview">
+      <button class="gallery-pending-remove" onclick="removeGalleryPending(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeGalleryPending(i) {
+  galleryPending.splice(i, 1);
+  renderGalleryPending();
+}
+
+async function saveGalleryPhotos() {
+  if (!galleryPending.length) { alert('Please select at least one photo first.'); return; }
+  const date = document.getElementById('gallery-date').value;
+  const category = document.getElementById('gallery-category').value || 'General';
+  const caption = document.getElementById('gallery-caption').value.trim();
+  if (!date) { alert('Please enter a date for these photos.'); return; }
+
+  const btn = document.querySelector('.gallery-save-btn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  try {
+    for (const img of galleryPending) {
+      await savePhotoToDB({
+        id: Date.now() + Math.random(),
+        date,
+        category,
+        caption,
+        dataUrl: img.dataUrl,
+        name: img.name,
+        source: 'manual',
+        addedAt: new Date().toISOString()
+      });
+    }
+    galleryPending = [];
+    document.getElementById('gallery-pending-previews').innerHTML = '';
+    document.getElementById('gallery-caption').value = '';
+    document.getElementById('gallery-category').value = '';
+    await renderGallery();
+    btn.textContent = '✓ Saved!'; btn.style.background = 'var(--sage)';
+    setTimeout(() => { btn.textContent = 'Save to Gallery'; btn.style.background = ''; btn.disabled = false; }, 2000);
+  } catch(err) {
+    btn.textContent = 'Save to Gallery'; btn.disabled = false;
+    alert('Error saving photos. Your browser may not support local storage of images. Try a different browser.');
+    console.error(err);
+  }
+}
+
+async function syncJournalPhotos() {
+  const entries = getEntries();
+  const existing = await getAllGalleryPhotos();
+  const existingJIds = new Set(existing.map(p => p.journalId).filter(Boolean));
+  for (const entry of entries) {
+    if (!entry.images?.length) continue;
+    const entryDate = new Date(entry.date).toISOString().split('T')[0];
+    for (let i = 0; i < entry.images.length; i++) {
+      const jid = `${entry.id}-${i}`;
+      if (!existingJIds.has(jid)) {
+        await savePhotoToDB({
+          id: Date.now() + Math.random(),
+          date: entryDate,
+          category: 'General',
+          caption: entry.note ? entry.note.substring(0, 80) : 'From journal entry',
+          dataUrl: entry.images[i].dataUrl,
+          name: entry.images[i].name || 'journal-photo.jpg',
+          source: 'journal',
+          journalId: jid,
+          addedAt: new Date().toISOString()
+        });
+        existingJIds.add(jid);
+      }
+    }
+  }
+}
+
+function filterGallery(filter, btn) {
+  galleryFilter = filter;
+  document.querySelectorAll('.gallery-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+}
+
+async function renderGallery() {
+  await syncJournalPhotos();
+  let photos = await getAllGalleryPhotos();
+
+  if (galleryFilter !== 'all') {
+    if (galleryFilter === 'journal') {
+      photos = photos.filter(p => p.source === 'journal');
+    } else {
+      photos = photos.filter(p => p.category === galleryFilter);
+    }
+  }
+
+  photos.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const grid = document.getElementById('gallery-grid');
+  const count = document.getElementById('gallery-count');
+  if (!grid) return;
+  count.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+
+  if (!photos.length) {
+    grid.innerHTML = '<div class="gallery-empty">No photos in this category yet.</div>';
+    return;
+  }
+
+  grid.innerHTML = photos.map(p => {
+    const d = new Date(p.date + 'T12:00:00');
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const srcBadge = p.source === 'journal' ? ' · Journal' : '';
+    const captionEsc = (p.caption||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const srcEsc = p.dataUrl.replace(/'/g,"\\'");
+    return `
+      <div class="gallery-photo-card" onclick="openLightboxWithCaption('${srcEsc}','${captionEsc} — ${dateStr}')">
+        <img src="${p.dataUrl}" alt="${p.caption||'photo'}" loading="lazy">
+        <div class="gallery-photo-meta">
+          <div class="gallery-photo-date">${dateStr}</div>
+          <div class="gallery-photo-tag">${p.category||'General'}${srcBadge}</div>
+          ${p.caption ? `<div class="gallery-photo-caption">${p.caption.substring(0,60)}${p.caption.length>60?'…':''}</div>` : ''}
+          <button class="gallery-photo-delete" onclick="event.stopPropagation();deleteGalleryPhoto(${p.id})">✕ Remove</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function deleteGalleryPhoto(id) {
+  if (!confirm('Remove this photo?')) return;
+  await deletePhotoFromDB(id);
+  renderGallery();
+}
+
+function openLightboxWithCaption(src, caption) {
+  document.getElementById('lightbox-img').src = src;
+  const cap = document.getElementById('lightbox-caption');
+  if (cap) cap.textContent = caption || '';
+  document.getElementById('lightbox').classList.add('open');
+}
+
+// ── SUPABASE SYNC (direct from browser) ───────────────
+
+const SUPABASE_URL = 'https://niwpjhbzjvbbxkdgoltg.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_2i_bdmtOdJ9ia9UpWE9Vug_yGNP5LjN';
+
+function setSyncStatus(msg, color) {
+  const el = document.getElementById('sync-status');
+  if (el) { el.textContent = msg; el.style.color = color || 'var(--text-soft)'; }
+}
+
+function supabaseHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON,
+    'Authorization': 'Bearer ' + SUPABASE_ANON,
+    'Prefer': 'resolution=merge-duplicates'
+  };
+}
+
+async function syncToCloud() {
+  const btn = document.getElementById('cloud-btn');
+  btn.textContent = '☁️ Syncing…'; btn.disabled = true;
+  setSyncStatus('Syncing to cloud…', 'var(--teal)');
+  try {
+    const entries = getEntries();
+    if (!entries.length) {
+      setSyncStatus('No entries to sync', 'var(--text-soft)');
+      btn.textContent = '☁️ Sync'; btn.disabled = false;
+      return;
+    }
+    const rows = entries.map(e => ({
+      id: e.id,
+      date: e.date,
+      spoons: e.spoons || null,
+      es: e.es || null,
+      pain: e.pain || null,
+      flare: e.flare || null,
+      o2: e.o2 || null,
+      sleep_hours: e.sleepHours ? parseFloat(e.sleepHours) : null,
+      sleep_score: e.sleepScore ? parseInt(e.sleepScore) : null,
+      sleep_quality: e.sleepQuality || null,
+      cpap_hours: e.cpapHours ? parseFloat(e.cpapHours) : null,
+      cpap_score: e.cpapScore ? parseInt(e.cpapScore) : null,
+      mood: e.mood || null,
+      bp_sys: e.bpSys ? parseInt(e.bpSys) : null,
+      bp_dia: e.bpDia ? parseInt(e.bpDia) : null,
+      hrv: e.hrv ? parseInt(e.hrv) : null,
+      spo2_avg: e.spo2Avg ? parseInt(e.spo2Avg) : null,
+      spo2_low: e.spo2Low ? parseInt(e.spo2Low) : null,
+      weight: e.weight ? parseFloat(e.weight) : null,
+      meds: e.meds || [],
+      symptoms: e.symptoms || [],
+      therapy: e.therapy || [],
+      factors: e.factors || [],
+      activity: e.activity || [],
+      note: e.note || null,
+      images: (e.images || []).map(img => ({ name: img.name }))
+    }));
+
+    const res = await fetch(SUPABASE_URL + '/rest/v1/journal_entries', {
+      method: 'POST',
+      headers: supabaseHeaders(),
+      body: JSON.stringify(rows)
+    });
+
+    if (res.ok || res.status === 201) {
+      setSyncStatus('✓ Synced ' + entries.length + ' entries · ' + new Date().toLocaleTimeString(), 'var(--sage)');
+    } else {
+      const err = await res.text();
+      throw new Error(err);
+    }
+  } catch (err) {
+    setSyncStatus('⚠ Sync failed — ' + err.message, 'var(--terracotta)');
+    console.error('Sync error:', err);
+  }
+  btn.textContent = '☁️ Sync'; btn.disabled = false;
+}
+
+async function syncFromCloud() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/journal_entries?order=date.desc&limit=500',
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+    );
+    if (!res.ok) return;
+    const cloudEntries = await res.json();
+    if (!cloudEntries || !cloudEntries.length) return;
+
+    const local = getEntries();
+    const localIds = new Set(local.map(e => String(e.id)));
+    let added = 0;
+
+    for (const ce of cloudEntries) {
+      if (!localIds.has(String(ce.id))) {
+        local.push({
+          id: ce.id,
+          date: ce.date,
+          spoons: ce.spoons,
+          es: ce.es,
+          pain: ce.pain,
+          flare: ce.flare,
+          o2: ce.o2,
+          sleepHours: ce.sleep_hours,
+          sleepScore: ce.sleep_score,
+          sleepQuality: ce.sleep_quality,
+          cpapHours: ce.cpap_hours,
+          cpapScore: ce.cpap_score,
+          mood: ce.mood,
+          bpSys: ce.bp_sys,
+          bpDia: ce.bp_dia,
+          hrv: ce.hrv,
+          spo2Avg: ce.spo2_avg,
+          spo2Low: ce.spo2_low,
+          weight: ce.weight,
+          meds: ce.meds || [],
+          symptoms: ce.symptoms || [],
+          therapy: ce.therapy || [],
+          factors: ce.factors || [],
+          activity: ce.activity || [],
+          note: ce.note,
+          images: []
+        });
+        added++;
+      }
+    }
+
+    if (added > 0) {
+      local.sort((a, b) => new Date(b.date) - new Date(a.date));
+      localStorage.setItem('lauriJournal', JSON.stringify(local));
+      renderEntries();
+      setSyncStatus('☁️ Pulled ' + added + ' entries from cloud', 'var(--teal)');
+    }
+  } catch (err) {
+    console.error('Pull error:', err);
+  }
+}
+
+// Auto-sync on load
+window.addEventListener('load', () => {
+  setTimeout(syncFromCloud, 1500);
+});
+
+// ── AI ANALYSIS ───────────────────────────────────────
+
+function setAIBtnsDisabled(disabled) {
+  document.querySelectorAll('.ai-tool-btn').forEach(b => b.disabled = disabled);
+}
+
+function showAIResult(title, text) {
+  document.getElementById('ai-result-title').textContent = title;
+  document.getElementById('ai-result-text').textContent = text;
+  document.getElementById('ai-result-panel').style.display = 'block';
+  document.getElementById('ai-result-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyAIResult() {
+  const text = document.getElementById('ai-result-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#ai-result-panel button:last-child');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy to Clipboard', 2000);
+  });
+}
+
+async function runWeeklySummary() {
+  const entries = getEntries();
+  if (entries.length < 2) { alert('Log at least 2 entries to generate a summary.'); return; }
+  setAIBtnsDisabled(true);
+  showAIResult('📊 Weekly Summary', '✨ Generating your weekly summary…');
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'weekly', entries: entries.slice(0, 20) })
+    });
+    const data = await res.json();
+    if (data.summary) {
+      showAIResult('📊 Weekly Summary', data.summary);
+    } else throw new Error(data.error || 'No response');
+  } catch (err) {
+    showAIResult('Error', 'Summary failed: ' + err.message);
+    console.error(err);
+  }
+  setAIBtnsDisabled(false);
+}
+
+async function runCorrelations() {
+  const entries = getEntries();
+  if (entries.length < 5) { alert('Log at least 5 entries for correlation analysis.'); return; }
+  setAIBtnsDisabled(true);
+  showAIResult('🔍 Correlations', '✨ Analyzing your patterns…');
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'correlations', entries })
+    });
+    const data = await res.json();
+    if (data.analysis) {
+      showAIResult('🔍 Correlation Analysis', data.analysis);
+    } else throw new Error(data.error || 'No response');
+  } catch (err) {
+    showAIResult('Error', 'Analysis failed: ' + err.message);
+    console.error(err);
+  }
+  setAIBtnsDisabled(false);
+}
+
+async function runProviderReport() {
+  const entries = getEntries();
+  if (!entries.length) { alert('No entries to generate a report from.'); return; }
+  const specialty = prompt('What type of specialist is this for?\n(e.g. Rheumatology, Pulmonology, Cardiology, Primary Care)', 'Rheumatology');
+  if (!specialty) return;
+  const days = parseInt(prompt('How many days should the report cover?', '30')) || 30;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const reportEntries = entries.filter(e => new Date(e.date) >= cutoff);
+  if (!reportEntries.length) { alert(`No entries in the last ${days} days.`); return; }
+
+  setAIBtnsDisabled(true);
+  showAIResult('📋 Provider Report', `✨ Generating ${specialty} report for the last ${days} days…`);
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'report',
+        entries: reportEntries,
+        specialty,
+        dateRange: `last ${days} days (${reportEntries.length} entries)`
+      })
+    });
+    const data = await res.json();
+    if (data.report) {
+      showAIResult(`📋 ${specialty} Report`, data.report);
+    } else throw new Error(data.error || 'No response');
+  } catch (err) {
+    showAIResult('Error', 'Report failed: ' + err.message);
+    console.error(err);
+  }
+  setAIBtnsDisabled(false);
+}
+
+async function getDailyInsight(entry) {
+  try {
+    const entries = getEntries();
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'daily', entries: [entry, ...entries.slice(0, 6)] })
+    });
+    const data = await res.json();
+    if (data.insight) {
+      document.getElementById('ai-insight-text').textContent = data.insight;
+      document.getElementById('ai-insight-card').style.display = 'block';
+      document.getElementById('ai-insight-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } catch (err) {
+    console.error('Daily insight error:', err);
+  }
+}
+
+// ── LIGHTBOX ─────────────────────────────────────────
+function openLightbox(src) { document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lightbox-img').src=''; }
+
+// Init
+renderEntries();
+</script>
+</body>
+</html>
