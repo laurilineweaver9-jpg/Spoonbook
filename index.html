@@ -1048,6 +1048,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
     Past Entries
     <div style="display:flex;gap:6px">
       <button onclick="syncToCloud()" id="cloud-btn" style="font-size:0.72rem;font-family:'DM Sans',sans-serif;background:var(--teal-light);border:1px solid var(--teal);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--teal);font-weight:600">☁️ Sync</button>
+      <button onclick="restoreEntries()" style="font-size:0.72rem;font-family:'DM Sans',sans-serif;background:var(--lavender-light);border:1px solid var(--lavender);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--lavender);font-weight:600">🔄 Restore</button>
       <button onclick="exportEntries()">Export</button>
     </div>
   </div>
@@ -2039,25 +2040,44 @@ function saveEntry() {
       factors: Array.from(document.querySelectorAll('.chip-factor.selected')).map(c=>c.textContent.trim()),
       activity: Array.from(document.querySelectorAll('.chip-activity.selected')).map(c=>c.textContent.trim()),
       note: document.getElementById('journal-note').value.trim(),
-      images: pendingImages.map(img => ({ name: img.name, dataUrl: img.dataUrl }))
+      // Store only photo names in localStorage — full images go to gallery IndexedDB
+      images: pendingImages.map(img => ({ name: img.name }))
     };
 
-    // Save to localStorage
+    // Save photos to gallery IndexedDB if any
+    if (pendingImages.length > 0) {
+      const entryDate = new Date(entry.date).toISOString().split('T')[0];
+      pendingImages.forEach(img => {
+        savePhotoToDB({
+          id: Date.now() + Math.random(),
+          date: entryDate,
+          category: 'General',
+          caption: entry.note ? entry.note.substring(0, 80) : 'From journal entry',
+          dataUrl: img.dataUrl,
+          name: img.name,
+          source: 'journal',
+          journalId: String(entry.id),
+          addedAt: new Date().toISOString()
+        }).catch(e => console.error('Photo save error:', e));
+      });
+    }
+
+    // Save entry to localStorage (no large image data)
     const existing = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
     existing.unshift(entry);
     localStorage.setItem('lauriJournal', JSON.stringify(existing));
 
-    // Flash button
+    // Flash button green
     const btn = document.getElementById('save-btn');
     btn.textContent = '✓ Saved!';
     btn.style.background = 'var(--sage)';
     setTimeout(() => { btn.textContent = 'Save Today\'s Entry'; btn.style.background = ''; }, 2000);
 
-    // Reset and render
+    // Reset form and show entries
     resetForm();
     renderEntries();
 
-    // Sync in background — completely separate, cannot affect save
+    // Sync to Supabase in background
     window.setTimeout(function() {
       try { syncToCloud(); } catch(e) { console.error(e); }
     }, 2000);
@@ -2120,6 +2140,8 @@ function renderEntries() {
       const facChips = (e.factors||[]).map(s=>`<span class="entry-chip ec-factor">${s}</span>`).join('');
       const actChips = (e.activity||[]).map(s=>`<span class="entry-chip ec-activity">${s}</span>`).join('');
       const imgs = (e.images||[]).filter(img=>img&&img.dataUrl).map(img=>`<img src="${img.dataUrl}" onclick="openLightbox('${img.dataUrl.replace(/'/g,"\\'")}')">`).join('');
+      const imgCount = (e.images||[]).length;
+      const imgNote = imgCount > 0 && !imgs ? `<div style="font-size:0.76rem;color:var(--teal);margin-top:5px">📷 ${imgCount} photo${imgCount>1?'s':''} — view in Photos tab</div>` : '';
       return `<div class="entry-card ${e.flare==='yes'?'entry-flare':''}">
         <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
         ${e.flare==='yes'?'<div class="entry-flare-badge">🔥 FLARE</div>':''}
@@ -2131,6 +2153,7 @@ function renderEntries() {
         ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
         ${e.note?`<div class="entry-note">${e.note}</div>`:''}
         ${imgs?`<div class="entry-images">${imgs}</div>`:''}
+        ${imgNote}
       </div>`;
     }).join('');
   } catch(err) {
@@ -2405,7 +2428,50 @@ function openLightboxWithCaption(src, caption) {
   document.getElementById('lightbox').classList.add('open');
 }
 
-// ── SUPABASE SYNC (direct from browser) ───────────────
+// ── RESTORE ENTRIES ───────────────────────────────────
+function restoreEntries() {
+  if (!confirm('This will restore your 28 previous journal entries. Any current entries will be merged. Continue?')) return;
+  const restored = [
+    {id:1752617280000,date:"2026-07-15T13:08:00.000Z",spoons:4,es:5,pain:4,mood:"😕 Frustrated",hrv:"11",symptoms:["Burning Eyes","Congestion","Fatigue","Headache","Joint Pain","Muscle Pain","Right Ear","Stiffness"],therapy:["Air Cast","Cane"],factors:["Trouble Staying Asleep"],note:"Lots of caffeine this morning and barely functional",images:[]},
+    {id:1752615900000,date:"2026-07-15T12:45:00.000Z",spoons:4,es:5,pain:4,mood:"😕 Frustrated",hrv:"11",symptoms:["Burning Eyes","Congestion","Headache","Joint Pain","Muscle Pain","Right Ear","Stiffness"],therapy:["Air Cast","Cane"],note:"Lots of caffeine this morning and barely functional.",images:[]},
+    {id:1752574680000,date:"2026-07-15T08:18:00.000Z",spoons:6,es:5,pain:4,mood:"😢 Overwhelmed",sleepHours:"8.5",sleepQuality:{emoji:"😐",label:"Okay"},bpSys:"104",bpDia:"69",weight:"186",hrv:"11",spo2Avg:"96",spo2Low:"84",sleepScore:"91",cpapScore:"90",cpapHours:"9.25",symptoms:["Burning Eyes","Congestion","Difficulty Hearing","Muscle Pain","Nose","Right Ear","Sleep Issues","Stiffness"],therapy:["Bath","CPAP Worn","Air Cast","Cane"],factors:["Social","Trouble Staying Asleep","Woke Tired"],note:"Dogs were barks and woke me several times last night. Muscles sore from a good Pilates work out. Tired and slow to move this morning",images:[]},
+    {id:1752490800000,date:"2026-07-14T07:40:00.000Z",spoons:7,es:4,pain:4,mood:"😐 Neutral",sleepHours:"7",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"102",bpDia:"71",weight:"187.8",hrv:"13",spo2Avg:"96",spo2Low:"90",sleepScore:"89",cpapScore:"92",cpapHours:"8",symptoms:["Burning Eyes","Congestion","Fatigue","Headache","Joint Pain","Right Ear","Sleep Issues","Stiffness"],therapy:["Bath","CBT","CPAP Worn"],factors:["Poor Sleep","Trouble Staying Asleep","Woke Early","Woke Tired"],note:"Slept poorly last night. Felt like little deep sleep and up at 0500. Sore muscles from Pilates yesterday. Took hot bath from 630-730",images:[]},
+    {id:1752440340000,date:"2026-07-13T20:59:00.000Z",spoons:4,es:3,pain:3,mood:"🙂 Content",hrv:"13",symptoms:["Difficulty Hearing","Headache","Nose","Right Ear"],activity:["Pilates"],note:"Got tired towards the afternoon. HA 5/10",images:[]},
+    {id:1752432480000,date:"2026-07-13T17:38:00.000Z",spoons:4,es:3,pain:3,mood:"🙂 Content",hrv:"12",symptoms:["Congestion","Fatigue","Headache","Right Ear"],therapy:["Air Cast","Cane"],factors:["Trouble Staying Asleep","Woke Tired"],activity:["Pilates","Stretching"],note:"A mid afternoon note. After a slow start this morning I feel a little better this afternoon.",images:[]},
+    {id:1752403380000,date:"2026-07-13T08:23:00.000Z",spoons:6,es:4,pain:3,mood:"😐 Neutral",sleepHours:"8",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"106",bpDia:"75",weight:"186.4",hrv:"12",spo2Avg:"94",spo2Low:"77",sleepScore:"96",cpapScore:"93",cpapHours:"8",symptoms:["Congestion","Fatigue","Headache","Muscle Pain","Right Ear","Sleep Issues","Stiffness","Tinnitus"],factors:["Poor Sleep","Vivid Dreams","Woke Tired"],note:"woke up very sleepy and fatigued. 2 hours to get out of bed",images:[]},
+    {id:1752353760000,date:"2026-07-12T20:56:00.000Z",spoons:3,es:4,pain:3,mood:"🙂 Content",hrv:"14",spo2Avg:"95",spo2Low:"85",symptoms:["Fatigue","Headache","Joint Pain","Muscle Pain","Rib Pain","Right Ear"],factors:["Shopping","Social","Trouble Staying Asleep","Woke Early","Woke Tired"],note:"Went out with Brooke from 0900-1500. exhausted when I got home. He 8/10",images:[]},
+    {id:1752322080000,date:"2026-07-12T08:08:00.000Z",spoons:6,es:3,pain:3,mood:"🙂 Content",sleepHours:"6.25",sleepQuality:{emoji:"😕",label:"Poor"},weight:"189.4",hrv:"14",spo2Avg:"95",spo2Low:"85",sleepScore:"72",cpapScore:"95",cpapHours:"7.25",symptoms:["Burning Eyes","Congestion","Facial Swelling","Headache","Muscle Pain","Right Ear","Tinnitus"],factors:["Day Off","Social","Trouble Staying Asleep","Vivid Dreams","Woke Early"],note:"Hard time staying asleep past 0200. Restless and hot.",images:[]},
+    {id:1752273120000,date:"2026-07-11T21:32:00.000Z",spoons:1,es:7,pain:4,mood:"😞 Down",hrv:"11",spo2Avg:"94",spo2Low:"83",symptoms:["Balance Issues","Burning Eyes","Eye Pain","Facial Swelling","Fatigue","Headache","Joint Pain","Muscle Pain","Right Ear","Sleep Issues"],therapy:["Aromatherapy"],factors:["Alcohol","Day Off"],activity:["Pilates"],note:"Had 1 beer and then came home and slept from 1400-1800. Still exhausted at bedtime. Some muscle pain from intense Pilates workouts, but more joint pain than usual. HA 8/10. Rt ear still cracking and draining",images:[]},
+    {id:1752233640000,date:"2026-07-11T09:14:00.000Z",spoons:6,es:5,pain:4,mood:"😐 Neutral",sleepHours:"8.5",sleepQuality:{emoji:"😩",label:"Terrible"},bpSys:"105",bpDia:"74",weight:"191.4",hrv:"11",sleepScore:"92",cpapScore:"92",cpapHours:"8.75",symptoms:["Burning Eyes","Eye Pain","Facial Swelling","Fatigue","Headache","Muscle Pain","Right Ear","Sternum Pain","Stiffness"],factors:["Day Off","Poor Sleep","Trouble Staying Asleep","Woke Tired"],activity:["Pilates"],note:"Additional entry with updated fields",images:[]},
+    {id:1752231720000,date:"2026-07-11T08:42:00.000Z",spoons:6,es:5,pain:4,mood:"😐 Neutral",sleepHours:"8.5",sleepQuality:{emoji:"😩",label:"Terrible"},bpSys:"105",bpDia:"73",weight:"191.4",hrv:"10",symptoms:["Burning Eyes","Eye Pain","Facial Swelling","Fatigue","Headache","Joint Pain","Muscle Pain","Nose","Rib Pain","Right Ear","Sleep Issues","Stiffness"],therapy:["CPAP Worn"],factors:["Day Off","Poor Sleep","Trouble Staying Asleep","Woke Tired"],activity:["Pilates"],note:"Rough night sleeping due to dogs. Woke tired and dozed back off. Not wearing spo2 monitor - needs charged. Pain 4/10. HA 6/10. Some GI issues (gas) since zepbound dose yesterday",images:[]},
+    {id:1752185940000,date:"2026-07-10T21:19:00.000Z",spoons:3,es:6,pain:4,mood:"😌 Calm",hrv:"11",meds:["Zepbound"],symptoms:["Fatigue","Headache","Joint Pain","Muscle Pain","Nose","Rib Pain","Right Ear","Sternum Pain","Stiffness"],factors:["Social"],note:"Very hard day to get through. Pain 4/10. HA 7/10. Saw Dr. Azzoquah, increasing colchicine to 2x/day. No other suggestions. Significant pain and swelling in hands and ear is still draining and split. Ultrasound of elbow done this afternoon as well. Dinner with friends. Looking forward to staying in bed for a while tomorrow morning",images:[]},
+    {id:1752143460000,date:"2026-07-10T08:31:00.000Z",spoons:4,es:6,pain:4,mood:"😫 Despair Goblin",sleepHours:"8.75",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"98",bpDia:"68",hrv:"11",spo2Avg:"95",spo2Low:"84",symptoms:["Balance Issues","Burning Eyes","Congestion","Difficulty Hearing","Eye Pain","Facial Swelling","Fatigue","Headache","Joint Pain","Muscle Pain","Nose","Rib Pain","Right Ear","Stiffness","Tinnitus"],factors:["Woke Tired"],note:"Woke at 630 this morning exhausted and dozed off and on until 830 - unable to wake up. HRV has been in the fuck range for 6 hours.",images:[]},
+    {id:1752101580000,date:"2026-07-09T20:53:00.000Z",spoons:2,es:7,pain:4,mood:"😫 Despair Goblin",hrv:"16",spo2Avg:"94",spo2Low:"85",symptoms:["Burning Eyes","Congestion","Difficulty Hearing","Eye Pain","Facial Swelling","Fatigue","Headache","Muscle Pain","Nose","Right Ear","Sternum Pain","Stiffness","Tinnitus"],therapy:["CBT"],factors:["Emotional Stress","Woke Early","Woke Tired"],note:"Had a lot of caffeine today tea, 4 shots of espresso just to stay upright and somewhat functional at work. Exhausted this evening with profound fatigue. Right ear canal remains swollen and red with cracking and crusty discharge.",images:[]},
+    {id:1752056160000,date:"2026-07-09T08:16:00.000Z",spoons:5,es:6,pain:4,mood:"😕 Frustrated",sleepHours:"7.5",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"109",bpDia:"77",hrv:"13",spo2Avg:"95",spo2Low:"80",symptoms:["Balance Issues","Burning Eyes","Congestion","Eye Pain","Fatigue","Headache","Joint Pain","Muscle Pain","Nose","Right Ear"],therapy:["CPAP Worn"],factors:["Trouble Staying Asleep","Woke Tired"],activity:["Pilates"],note:"This entry is AFTER Pilates class (630-730) where I really struggled. Profound muscle weakness today. Came home and back in bed for awhile before really starting work",images:[]},
+    {id:1751993280000,date:"2026-07-08T19:48:00.000Z",spoons:5,es:3,pain:2,mood:"😊 Happy",hrv:"14",spo2Avg:"95",spo2Low:"87",symptoms:["Burning Eyes","Fatigue","Headache","Rib Pain","Right Ear","Stiffness"],therapy:["CPAP Worn"],factors:["House Cleaning"],activity:["5k Steps","Pilates"],note:"Headache 5/10. Stinging and pressure. Right ear canal, a lot of drainage with skin splitting. Labs normal with elevated AST, slight WBC elevation and neutrophils. Iron studies normal",images:[]},
+    {id:1751964420000,date:"2026-07-08T07:37:00.000Z",spoons:6,es:4,pain:4,mood:"🙂 Content",sleepHours:"7",sleepQuality:{emoji:"😐",label:"Okay"},bpSys:"115",bpDia:"74",hrv:"14",spo2Avg:"96",spo2Low:"88",symptoms:["Burning Eyes","Congestion","Facial Swelling","Headache","Joint Pain","Muscle Pain","Rib Pain","Right Ear","Stiffness"],therapy:["Meditation"],factors:["Woke Early","Woke Tired"],note:"Headache 5/10",images:[]},
+    {id:1751928420000,date:"2026-07-07T21:17:00.000Z",spoons:1,es:6,pain:4,mood:"😞 Down",sleepHours:"8",hrv:"21",spo2Avg:"95",spo2Low:"85",meds:["Muscle Relaxer","Tramadol","Tums"],symptoms:["Joint Pain","Muscle Pain","Nose","Rib Pain","Right Ear","Sternum Pain","Stiffness","Tinnitus"],factors:["House Cleaning"],activity:["Pilates"],note:"Severe headaches every night. Stinging dull pain around crown, intermittent sharp pain in the temples. Need to start tracking this pain separate. Global pain 4/10. Headache 7/10. Used topical THC cream on ribs and hands",images:[]},
+    {id:1751884920000,date:"2026-07-07T07:42:00.000Z",spoons:8,es:4,pain:4,mood:"😢 Overwhelmed",sleepQuality:{emoji:"😐",label:"Okay"},bpSys:"118",bpDia:"73",weight:"192.6",hrv:"27",spo2Avg:"94",spo2Low:"85",symptoms:["Burning Eyes","Congestion","Difficulty Hearing","Joint Pain","Rib Pain","Right Ear","Tinnitus"],therapy:["Meditation"],factors:["Late Bedtime","Woke Tired"],note:"Getting the day started slowly, Need to get GLPs ordered",images:[]},
+    {id:1751838120000,date:"2026-07-06T20:22:00.000Z",spoons:2,es:5,pain:4,mood:"😕 Frustrated",hrv:"14",meds:["Tums"],symptoms:["Burning Eyes","Headache","Joint Pain","Muscle Pain","Rib Pain"],factors:["Alcohol","Shopping","Social"],note:"Ended day exhausted. Had 2 beers with dinner and then very ready to sleep. Cramping in mid back",images:[]},
+    {id:1751810400000,date:"2026-07-06T15:20:00.000Z",spoons:3,es:5,pain:2,mood:"😢 Overwhelmed",hrv:"14",meds:["Zofran"],symptoms:["Burning Eyes","Congestion","Headache","Joint Pain","Muscle Pain","Nausea","Rib Pain","Sternum Pain"],therapy:["Bath","Journaling"],factors:["Social"],activity:["5k Steps"],note:"Spent the morning doing Pilates, some yard work before I had nausea. Then lunch with friends and a blood draw. Energy level is gone and I'm very fatigued",images:[]},
+    {id:1751795400000,date:"2026-07-06T08:40:00.000Z",spoons:10,es:3,pain:2,mood:"😌 Calm",sleepHours:"6.25",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"118",bpDia:"85",hrv:"13",spo2Avg:"96",spo2Low:"89",symptoms:["Balance Issues","Burning Eyes","Congestion","Eye Pain","Headache","Nose","Rib Pain","Stiffness","Tinnitus"],factors:["Day Off","House Cleaning","Trouble Staying Asleep","Vivid Dreams","Yard Work"],activity:["Pilates"],note:"Morning entry after Pilates but before am medication",images:[]},
+    {id:1751755500000,date:"2026-07-05T21:35:00.000Z",spoons:4,es:4,pain:4,mood:"😞 Down",hrv:"13",meds:["Tums"],symptoms:["Burning Eyes","Congestion","Difficulty Hearing","Fatigue","Headache","Joint Pain","Muscle Pain","Rib Pain","Right Ear","Stiffness"],therapy:["CPAP Worn"],factors:["Day Off","Woke Tired"],activity:["Stretching"],note:"Very lazy day. Slept late and then watched soccer on the couch",images:[]},
+    {id:1751723280000,date:"2026-07-05T08:48:00.000Z",spoons:7,es:4,pain:4,mood:"😌 Calm",sleepHours:"8.5",sleepQuality:{emoji:"😐",label:"Okay"},bpSys:"103",bpDia:"67",hrv:"13",spo2Avg:"93",spo2Low:"84",symptoms:["Burning Eyes","Congestion","Fatigue","Headache","Rib Pain","Right Ear","Stiffness"],factors:["Day Off","Vivid Dreams","Woke Tired"],note:"hard to get going this morning. Stiff achy joints. Fire burning in Colorado affecting air quality",images:[]},
+    {id:1751632740000,date:"2026-07-04T08:39:00.000Z",spoons:7,es:4,pain:2,mood:"😐 Neutral",sleepHours:"7.75",sleepQuality:{emoji:"😐",label:"Okay"},bpSys:"108",bpDia:"70",hrv:"12",symptoms:["Burning Eyes","Congestion","Fatigue","Headache","Stiffness"],therapy:["Meditation"],note:"Beginning of the day. Feeling much better than yesterday",images:[]},
+    {id:1751564160000,date:"2026-07-03T17:16:00.000Z",spoons:2,es:6,pain:6,mood:"😞 Down",hrv:"12",spo2Avg:"92",spo2Low:"73",meds:["Cimzia"],symptoms:["Balance Issues","Burning Eyes","Congestion","Fatigue","Headache","Muscle Pain","Right Ear","Sleep Issues","Stiffness"],factors:["Day Off","Woke Tired"],note:"Stayed in bed until 1500 then moved to the couch. Additional sleep from 1130-1430",images:[]},
+    {id:1751541900000,date:"2026-07-03T10:25:00.000Z",spoons:5,es:7,pain:6,mood:"😐 Neutral",sleepHours:"9.5",sleepQuality:{emoji:"😕",label:"Poor"},bpSys:"107",bpDia:"80",weight:"184",hrv:"12",spo2Avg:"93",spo2Low:"68",meds:["Cimzia"],symptoms:["Balance Issues","Burning Eyes","Congestion","Eye Pain","Fatigue","Headache","Joint Pain","Nose","Pre-Syncope","Rib Pain","Right Ear","Sleep Issues","Sternum Pain","Stiffness"],therapy:["CPAP Worn"],factors:["Day Off","Trouble Staying Asleep","Woke Tired"],note:"Skipped Pilates this morning. Too fatigued and dizzy",images:[]},
+    {id:1751500500000,date:"2026-07-02T20:55:00.000Z",spoons:6,es:5,pain:4,flare:"yes",mood:"😢 Overwhelmed",sleepHours:"8",sleepQuality:{emoji:"😴",label:"Great"},weight:"185",hrv:"14",spo2Avg:"94",spo2Low:"84",symptoms:["Burning Eyes","Congestion","Fatigue","Headache","Joint Pain","Rib Pain","Sternum Pain","Tinnitus"],therapy:["Bath","CBT","CPAP Worn"],factors:["Woke Tired"],note:"Woke late with lingering somnolence. Stayed in bed until 1130am. Low energy",images:[]}
+  ];
+
+  // Merge with any existing entries
+  const existing = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
+  const existingIds = new Set(existing.map(e => String(e.id)));
+  const toAdd = restored.filter(e => !existingIds.has(String(e.id)));
+  const merged = [...existing, ...toAdd].sort((a,b) => new Date(b.date) - new Date(a.date));
+  localStorage.setItem('lauriJournal', JSON.stringify(merged));
+  renderEntries();
+  alert('✓ Restored ' + toAdd.length + ' entries! Tap ☁️ Sync to back them up.');
+}
 
 const SUPABASE_URL = 'https://niwpjhbzjvbbxkdgoltg.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_2i_bdmtOdJ9ia9UpWE9Vug_yGNP5LjN';
