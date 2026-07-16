@@ -244,6 +244,15 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
 .sleep-face:hover { border-color: var(--lavender); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 .sleep-face.selected { border-color: var(--lavender); background: var(--lavender-light); border-width: 2px; transform: scale(1.05); }
 
+/* Day summary overall rating faces */
+.day-rating-faces { display: flex; gap: 7px; }
+.day-rating-face { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; border: 1.5px solid var(--border); border-radius: 14px; background: #fafafa; padding: 10px 4px 8px; cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.day-rating-face .face-emoji { font-size: 1.5rem; line-height: 1; }
+.day-rating-face .face-label { font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-soft); }
+.day-rating-face:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.day-rating-face.selected { border-color: var(--gold); background: var(--gold-light); border-width: 2px; transform: scale(1.03); }
+.day-rating-face.selected .face-label { color: #7a5a10; }
+
 /* Mood */
 .mood-grid { display: flex; gap: 6px; flex-wrap: wrap; }
 .mood-btn { border: 1.5px solid var(--border); border-radius: 20px; background: #fafafa; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; color: var(--text-soft); font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -601,6 +610,44 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
 .ai-tool-btn span { font-size:0.74rem; font-weight:400; opacity:0.8; }
 .ai-tool-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
 .ai-tool-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+/* Tier badge (daily insight) */
+.tier-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
+.tier-rest { background:var(--sage-light); color:#3d6647; }
+.tier-light { background:var(--teal-light); color:#2e6b66; }
+.tier-full { background:var(--gold-light); color:#7a5a10; }
+.tier-checkin { background:var(--red-light); color:#8a2f2f; border:1.5px solid var(--red); }
+.insight-headline { font-family:'Playfair Display',serif; font-size:1rem; font-weight:600; color:var(--navy); margin-bottom:6px; line-height:1.4; }
+.insight-body { font-size:0.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:8px; }
+.insight-action { font-size:0.84rem; color:var(--navy); line-height:1.6; background:rgba(255,255,255,0.6); border-radius:10px; padding:9px 11px; margin-bottom:8px; }
+.insight-action strong { text-transform:uppercase; font-size:0.66rem; letter-spacing:0.08em; color:var(--teal); display:block; margin-bottom:3px; }
+.insight-flag { font-size:0.84rem; color:#8a2f2f; line-height:1.6; background:var(--red-light); border:1px solid var(--red); border-radius:10px; padding:9px 11px; }
+.insight-flag strong { display:block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:3px; }
+
+/* Provider report picker */
+.picker-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-soft); margin:12px 0 7px; }
+.picker-label:first-child { margin-top:0; }
+.pill-row { display:flex; flex-wrap:wrap; gap:7px; }
+.pill-btn { padding:7px 13px; border-radius:20px; border:1.5px solid var(--border); background:#fafafa; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-soft); cursor:pointer; transition:all 0.15s; }
+.pill-btn:hover { border-color:var(--gold); transform:translateY(-1px); }
+.pill-btn.pill-selected { background:var(--gold); border-color:var(--gold); color:white; }
+.date-inputs-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
+.date-inputs-row input[type="date"] { flex:1; padding:8px 10px; border-radius:8px; border:1.5px solid var(--border); font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--text); }
+.generate-btn { width:100%; margin-top:14px; padding:11px; border-radius:12px; border:none; background:var(--navy); color:var(--gold-light); font-family:'DM Sans',sans-serif; font-size:0.86rem; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.generate-btn:hover { background:#2a4568; }
+.generate-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+/* Portal message */
+.portal-msg-box { background:var(--gold-light); border:1.5px solid var(--gold); border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.portal-msg-label { font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#7a5a10; margin-bottom:6px; display:flex; justify-content:space-between; }
+.portal-msg-text { font-size:0.92rem; color:var(--navy); line-height:1.5; font-family:'DM Sans',sans-serif; }
+.report-toggle-btn { width:100%; padding:9px; background:none; border:1px dashed var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--text-soft); cursor:pointer; margin-bottom:10px; }
+.report-toggle-btn:hover { border-color:var(--teal); color:var(--teal); }
+
+/* Mini charts */
+.chart-block { margin-bottom:16px; }
+.chart-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-soft); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.chart-svg-wrap { background:#fafafa; border-radius:10px; padding:8px 6px; }
 
 /* Lightbox caption */
 .lightbox-caption {
@@ -981,7 +1028,57 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
     </div>
   </div>
 
-  <!-- 12. Photos -->
+  <!-- 12. Day Summary -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-gold">📆</div><div class="jblock-title">Day Summary</div></div>
+    <div class="jblock-subtitle">The quick-add wrap-up — intake and how it all added up.</div>
+
+    <div class="body-group-label">Overall, how was today?</div>
+    <div class="day-rating-faces">
+      <div class="day-rating-face" onclick="selectDayRating(this,'😄','Great')"><span class="face-emoji">😄</span><span class="face-label">Great</span></div>
+      <div class="day-rating-face" onclick="selectDayRating(this,'🙂','Good')"><span class="face-emoji">🙂</span><span class="face-label">Good</span></div>
+      <div class="day-rating-face" onclick="selectDayRating(this,'😐','Okay')"><span class="face-emoji">😐</span><span class="face-label">Okay</span></div>
+      <div class="day-rating-face" onclick="selectDayRating(this,'😕','Rough')"><span class="face-emoji">😕</span><span class="face-label">Rough</span></div>
+      <div class="day-rating-face" onclick="selectDayRating(this,'😩','Terrible')"><span class="face-emoji">😩</span><span class="face-label">Terrible</span></div>
+    </div>
+
+    <div class="body-group-label" style="margin-top:14px">🥤 Intake</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">Cups of Caffeine</div>
+        <input class="body-input" type="number" id="caffeine-cups" placeholder="e.g. 2" min="0" max="20" step="0.5">
+      </div>
+      <div class="body-field">
+        <div class="body-label">Water (oz)</div>
+        <input class="body-input" type="number" id="water-oz" placeholder="e.g. 64" min="0" max="300">
+      </div>
+      <div class="body-field">
+        <div class="body-label">Alcoholic Drinks</div>
+        <input class="body-input" type="number" id="alcohol-drinks" placeholder="e.g. 0" min="0" max="20" step="0.5">
+      </div>
+      <div class="body-field">
+        <div class="body-label">Calories</div>
+        <input class="body-input" type="number" id="calories" placeholder="e.g. 1800" min="0" max="10000">
+      </div>
+    </div>
+
+    <div class="body-group-label" style="margin-top:14px">👟 Movement</div>
+    <div class="body-grid">
+      <div class="body-field">
+        <div class="body-label">Steps</div>
+        <input class="body-input" type="number" id="steps" placeholder="e.g. 4200" min="0" max="100000">
+      </div>
+    </div>
+
+    <div class="body-group-label" style="margin-top:14px">🍗 Protein Goal</div>
+    <div class="jblock-subtitle" style="padding-left:0;margin-bottom:8px">Did you get more than 75g of protein today?</div>
+    <div class="radio-row">
+      <div class="radio-opt" id="protein-yes" onclick="selectRadio('protein','yes')">✓ Yes, 75g+</div>
+      <div class="radio-opt" id="protein-no" onclick="selectRadio('protein','no')">— Under 75g</div>
+    </div>
+  </div>
+
+  <!-- 13. Photos -->
   <div class="jblock">
     <div class="jblock-header"><div class="jblock-icon icon-navy">📷</div><div class="jblock-title">Photos</div></div>
     <div class="jblock-subtitle">Document swelling, rashes, or anything visual.</div>
@@ -1007,11 +1104,15 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
 
   <!-- AI Daily Insight -->
   <div id="ai-insight-card" style="display:none;background:linear-gradient(135deg,#e8f6f5,#ece8f7);border:1px solid rgba(111,175,169,0.3);border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="width:30px;height:30px;background:var(--teal-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem">✨</div>
       <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--teal)">Daily Insight from The Spoonbook AI</div>
     </div>
-    <div id="ai-insight-text" style="font-size:0.88rem;color:var(--navy);line-height:1.7;font-family:'Playfair Display',serif;font-style:italic"></div>
+    <div id="ai-tier-badge"></div>
+    <div id="ai-insight-headline" class="insight-headline"></div>
+    <div id="ai-insight-text" class="insight-body"></div>
+    <div id="ai-insight-action" style="display:none"></div>
+    <div id="ai-insight-flag" style="display:none"></div>
   </div>
 
   <!-- AI Tools -->
@@ -1026,19 +1127,71 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
         🔍 Find Correlations
         <span>What factors make your days better or worse?</span>
       </button>
-      <button onclick="runProviderReport()" class="ai-tool-btn" style="background:var(--gold-light);border:1.5px solid var(--gold);color:#7a5a10">
+      <button onclick="toggleProviderPicker()" class="ai-tool-btn" style="background:var(--gold-light);border:1.5px solid var(--gold);color:#7a5a10">
         📋 Generate Provider Report
-        <span>Clinical summary ready for your care team</span>
+        <span>Clinical summary + portal message for your care team</span>
       </button>
     </div>
   </div>
 
-  <!-- AI Result Panel -->
+  <!-- Provider Report Picker -->
+  <div id="provider-picker-panel" style="display:none;margin-top:12px;background:white;border:1px solid #e8e4f0;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--navy)">📋 Provider Report Setup</div>
+
+    <div class="picker-label">Which specialist is this for?</div>
+    <div class="pill-row" id="specialty-pills">
+      <button class="pill-btn" data-specialty="pcp" onclick="selectSpecialty('pcp')">PCP</button>
+      <button class="pill-btn" data-specialty="rheum" onclick="selectSpecialty('rheum')">Rheum</button>
+      <button class="pill-btn" data-specialty="cardiology" onclick="selectSpecialty('cardiology')">Cardiology</button>
+      <button class="pill-btn" data-specialty="pulmonary" onclick="selectSpecialty('pulmonary')">Pulmonary</button>
+      <button class="pill-btn" data-specialty="gi" onclick="selectSpecialty('gi')">GI</button>
+      <button class="pill-btn" data-specialty="gu" onclick="selectSpecialty('gu')">GU</button>
+      <button class="pill-btn" data-specialty="gyn" onclick="selectSpecialty('gyn')">GYN</button>
+    </div>
+
+    <div class="picker-label">Date range</div>
+    <div class="pill-row" id="daterange-pills">
+      <button class="pill-btn" data-range="last30" onclick="selectDateRange('last30')">Last 30 days</button>
+      <button class="pill-btn" data-range="last60" onclick="selectDateRange('last60')">Last 60 days</button>
+      <button class="pill-btn" data-range="last90" onclick="selectDateRange('last90')">Last 90 days</button>
+      <button class="pill-btn" data-range="sincevisit" onclick="selectDateRange('sincevisit')">Since last visit</button>
+      <button class="pill-btn" data-range="custom" onclick="selectDateRange('custom')">Custom</button>
+    </div>
+    <div id="sincevisit-input" class="date-inputs-row" style="display:none">
+      <input type="date" id="last-visit-date">
+    </div>
+    <div id="custom-range-inputs" class="date-inputs-row" style="display:none">
+      <input type="date" id="custom-start-date">
+      <span style="color:var(--text-soft);font-size:0.8rem">to</span>
+      <input type="date" id="custom-end-date">
+    </div>
+
+    <button class="generate-btn" id="generate-report-btn" onclick="generateProviderReport()">Generate Report</button>
+  </div>
+
+  <!-- Provider Report Result -->
+  <div id="provider-result-panel" style="display:none;margin-top:12px;background:white;border:1px solid #e8e4f0;border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div id="provider-result-title" style="font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--navy)"></div>
+      <button onclick="document.getElementById('provider-result-panel').style.display='none'" style="background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:1.1rem;padding:2px 6px">✕</button>
+    </div>
+    <div class="portal-msg-box">
+      <div class="portal-msg-label"><span>Portal Message</span><span id="portal-msg-count"></span></div>
+      <div id="portal-msg-text" class="portal-msg-text"></div>
+    </div>
+    <button onclick="copyPortalMessage(this)" style="width:100%;padding:9px;margin-bottom:10px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text-soft);cursor:pointer">Copy Portal Message</button>
+    <button class="report-toggle-btn" id="report-toggle-btn" onclick="toggleFullReport()">▾ View full clinical report</button>
+    <div id="full-report-text" style="display:none;font-size:0.86rem;color:var(--text-soft);line-height:1.8;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:12px;margin-top:4px"></div>
+    <button onclick="copyFullReport()" id="copy-full-report-btn" style="display:none;margin-top:12px;width:100%;padding:9px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text-soft);cursor:pointer">Copy Full Report</button>
+  </div>
+
+  <!-- AI Result Panel (weekly summary / correlations) -->
   <div id="ai-result-panel" style="display:none;margin-top:12px;background:white;border:1px solid #e8e4f0;border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div id="ai-result-title" style="font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--navy)"></div>
       <button onclick="document.getElementById('ai-result-panel').style.display='none'" style="background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:1.1rem;padding:2px 6px">✕</button>
     </div>
+    <div id="ai-result-charts"></div>
     <div id="ai-result-text" style="font-size:0.88rem;color:var(--text-soft);line-height:1.8;white-space:pre-wrap"></div>
     <button onclick="copyAIResult()" style="margin-top:12px;width:100%;padding:9px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text-soft);cursor:pointer">Copy to Clipboard</button>
   </div>
@@ -1916,7 +2069,7 @@ const ES_LABELS = {
 const ES_COLORS = {1:'#9A90BC',2:'#6FAFA9',3:'#5E8C6A',4:'#7a9e8e',5:'#D8A84A',6:'#d4884a',7:'#C97567',8:'#c47a7a',9:'#b85252',10:'#203A55'};
 const PAIN_LABELS = {0:'No hurt',2:'Hurts little bit',4:'Hurts little more',6:'Hurts even more',8:'Hurts whole lot',10:'Hurts worst'};
 
-let selES = null, selPain = null, selFlare = null, selO2 = null, selSleep = null, selMood = null, pendingImages = [];
+let selES = null, selPain = null, selFlare = null, selO2 = null, selSleep = null, selMood = null, selDayRating = null, selProtein = null, pendingImages = [];
 
 function selectES(n) {
   selES = n;
@@ -1936,11 +2089,21 @@ function selectRadio(group, val) {
     selFlare = val;
     document.getElementById('flare-yes').className = 'radio-opt' + (val==='yes' ? ' selected-yes' : '');
     document.getElementById('flare-no').className  = 'radio-opt' + (val==='no'  ? ' selected-no'  : '');
-  } else {
+  } else if (group==='o2') {
     selO2 = val;
     document.getElementById('o2-yes').className = 'radio-opt' + (val==='yes' ? ' selected-yes' : '');
     document.getElementById('o2-no').className  = 'radio-opt' + (val==='no'  ? ' selected-no'  : '');
+  } else if (group==='protein') {
+    selProtein = val;
+    document.getElementById('protein-yes').className = 'radio-opt' + (val==='yes' ? ' selected-yes' : '');
+    document.getElementById('protein-no').className  = 'radio-opt' + (val==='no'  ? ' selected-no'  : '');
   }
+}
+
+function selectDayRating(el, emoji, label) {
+  selDayRating = {emoji, label};
+  document.querySelectorAll('.day-rating-face').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 function selectSleep(el, emoji, label) {
@@ -2034,6 +2197,13 @@ function saveEntry() {
       sleepScore: document.getElementById('sleep-score').value || null,
       cpapScore: document.getElementById('cpap-score').value || null,
       cpapHours: document.getElementById('cpap-hours').value || null,
+      dayRating: selDayRating,
+      caffeineCups: document.getElementById('caffeine-cups').value || null,
+      waterOz: document.getElementById('water-oz').value || null,
+      alcoholDrinks: document.getElementById('alcohol-drinks').value || null,
+      calories: document.getElementById('calories').value || null,
+      steps: document.getElementById('steps').value || null,
+      protein75: selProtein,
       meds: Array.from(document.querySelectorAll('.chip-med.selected')).map(c=>c.textContent.trim()),
       symptoms: Array.from(document.querySelectorAll('.chip-symptom.selected')).map(c=>c.textContent.trim()),
       therapy: Array.from(document.querySelectorAll('.chip-therapy.selected')).map(c=>c.textContent.trim()),
@@ -2089,18 +2259,19 @@ function saveEntry() {
 }
 
 function resetForm() {
-  selES=null; selPain=null; selFlare=null; selO2=null; selSleep=null; selMood=null; selSpoons=null;
+  selES=null; selPain=null; selFlare=null; selO2=null; selSleep=null; selMood=null; selSpoons=null; selDayRating=null; selProtein=null;
   pendingImages=[];
   try {
     document.querySelectorAll('.spoon-btn').forEach(b => b.className='spoon-btn');
     document.getElementById('spoon-label').textContent='Tap a spoon to set your count for today.';
     document.querySelectorAll('.es-btn').forEach(b => b.classList.remove('selected'));
     document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
-    ['flare-yes','flare-no','o2-yes','o2-no'].forEach(id => { const el = document.getElementById(id); if(el) el.className='radio-opt'; });
+    ['flare-yes','flare-no','o2-yes','o2-no','protein-yes','protein-no'].forEach(id => { const el = document.getElementById(id); if(el) el.className='radio-opt'; });
     document.querySelectorAll('.sleep-face').forEach(f => f.classList.remove('selected'));
+    document.querySelectorAll('.day-rating-face').forEach(f => f.classList.remove('selected'));
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-    ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours','caffeine-cups','water-oz','alcohol-drinks','calories','steps'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     const note = document.getElementById('journal-note'); if(note) note.value='';
     const prev = document.getElementById('img-previews'); if(prev) prev.innerHTML='';
     const esLbl = document.getElementById('es-label'); if(esLbl) esLbl.textContent='';
@@ -2134,6 +2305,12 @@ function renderEntries() {
       if (e.weight) vitals.push(`<span class="vital-tag">Wt <strong>${e.weight}lbs</strong></span>`);
       if (e.sleepHours) vitals.push(`<span class="vital-tag">Sleep <strong>${e.sleepHours}h</strong></span>`);
       if (e.o2==='yes') vitals.push(`<span class="vital-tag o2-tag">🫁 On O₂</span>`);
+      if (e.caffeineCups) vitals.push(`<span class="vital-tag">☕ ${e.caffeineCups} cups</span>`);
+      if (e.waterOz) vitals.push(`<span class="vital-tag">💧 ${e.waterOz}oz</span>`);
+      if (e.alcoholDrinks) vitals.push(`<span class="vital-tag">🍷 ${e.alcoholDrinks} drink${e.alcoholDrinks==1?'':'s'}</span>`);
+      if (e.calories) vitals.push(`<span class="vital-tag">🍽️ ${e.calories} cal</span>`);
+      if (e.steps) vitals.push(`<span class="vital-tag">👟 ${e.steps} steps</span>`);
+      if (e.protein75) vitals.push(`<span class="vital-tag">🍗 ${e.protein75==='yes'?'75g+ protein':'<75g protein'}</span>`);
       const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
       const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
       const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
@@ -2149,6 +2326,7 @@ function renderEntries() {
         <div style="margin-bottom:4px">${spoonBadge}${esBadge}${esText}${painBadge}</div>
         ${e.mood?`<div style="font-size:0.82rem;color:var(--lavender);margin-bottom:4px">${e.mood}</div>`:''}
         ${e.sleepQuality?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.sleepQuality.emoji||''} Sleep: ${e.sleepQuality.label||''}</div>`:''}
+        ${e.dayRating?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.dayRating.emoji||''} Day: ${e.dayRating.label||''}</div>`:''}
         ${vitals.length?`<div class="entry-vitals">${vitals.join('')}</div>`:''}
         ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
         ${e.note?`<div class="entry-note">${e.note}</div>`:''}
@@ -2521,6 +2699,13 @@ async function syncToCloud() {
       spo2_avg: e.spo2Avg ? parseInt(e.spo2Avg) : null,
       spo2_low: e.spo2Low ? parseInt(e.spo2Low) : null,
       weight: e.weight ? parseFloat(e.weight) : null,
+      day_rating: e.dayRating || null,
+      caffeine_cups: e.caffeineCups ? parseFloat(e.caffeineCups) : null,
+      water_oz: e.waterOz ? parseFloat(e.waterOz) : null,
+      alcohol_drinks: e.alcoholDrinks ? parseFloat(e.alcoholDrinks) : null,
+      calories: e.calories ? parseInt(e.calories) : null,
+      steps: e.steps ? parseInt(e.steps) : null,
+      protein_75: e.protein75 || null,
       meds: e.meds || [],
       symptoms: e.symptoms || [],
       therapy: e.therapy || [],
@@ -2585,6 +2770,13 @@ async function syncFromCloud() {
           spo2Avg: ce.spo2_avg,
           spo2Low: ce.spo2_low,
           weight: ce.weight,
+          dayRating: ce.day_rating,
+          caffeineCups: ce.caffeine_cups,
+          waterOz: ce.water_oz,
+          alcoholDrinks: ce.alcohol_drinks,
+          calories: ce.calories,
+          steps: ce.steps,
+          protein75: ce.protein_75,
           meds: ce.meds || [],
           symptoms: ce.symptoms || [],
           therapy: ce.therapy || [],
@@ -2639,6 +2831,7 @@ async function runWeeklySummary() {
   const entries = getEntries();
   if (entries.length < 2) { alert('Log at least 2 entries to generate a summary.'); return; }
   setAIBtnsDisabled(true);
+  document.getElementById('ai-result-charts').innerHTML = '';
   showAIResult('📊 Weekly Summary', '✨ Generating your weekly summary…');
   try {
     const res = await fetch('/.netlify/functions/analyze', {
@@ -2649,6 +2842,7 @@ async function runWeeklySummary() {
     const data = await res.json();
     if (data.summary) {
       showAIResult('📊 Weekly Summary', data.summary);
+      renderWeeklyCharts(data.chartData, data.stats);
     } else throw new Error(data.error || 'No response');
   } catch (err) {
     showAIResult('Error', 'Summary failed: ' + err.message);
@@ -2661,6 +2855,7 @@ async function runCorrelations() {
   const entries = getEntries();
   if (entries.length < 5) { alert('Log at least 5 entries for correlation analysis.'); return; }
   setAIBtnsDisabled(true);
+  document.getElementById('ai-result-charts').innerHTML = '';
   showAIResult('🔍 Correlations', '✨ Analyzing your patterns…');
   try {
     const res = await fetch('/.netlify/functions/analyze', {
@@ -2679,40 +2874,14 @@ async function runCorrelations() {
   setAIBtnsDisabled(false);
 }
 
-async function runProviderReport() {
-  const entries = getEntries();
-  if (!entries.length) { alert('No entries to generate a report from.'); return; }
-  const specialty = prompt('What type of specialist is this for?\n(e.g. Rheumatology, Pulmonology, Cardiology, Primary Care)', 'Rheumatology');
-  if (!specialty) return;
-  const days = parseInt(prompt('How many days should the report cover?', '30')) || 30;
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  const reportEntries = entries.filter(e => new Date(e.date) >= cutoff);
-  if (!reportEntries.length) { alert(`No entries in the last ${days} days.`); return; }
+// ── Daily insight (tier-aware) ────────────────────────
 
-  setAIBtnsDisabled(true);
-  showAIResult('📋 Provider Report', `✨ Generating ${specialty} report for the last ${days} days…`);
-  try {
-    const res = await fetch('/.netlify/functions/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'report',
-        entries: reportEntries,
-        specialty,
-        dateRange: `last ${days} days (${reportEntries.length} entries)`
-      })
-    });
-    const data = await res.json();
-    if (data.report) {
-      showAIResult(`📋 ${specialty} Report`, data.report);
-    } else throw new Error(data.error || 'No response');
-  } catch (err) {
-    showAIResult('Error', 'Report failed: ' + err.message);
-    console.error(err);
-  }
-  setAIBtnsDisabled(false);
-}
+const TIER_META = {
+  rest:    { label: '🛋️ Rest Day',         cls: 'tier-rest' },
+  light:   { label: '🚶 Light Activity',    cls: 'tier-light' },
+  full:    { label: '🌟 Full Steam Ahead',  cls: 'tier-full' },
+  checkin: { label: '🚨 Check In',          cls: 'tier-checkin' }
+};
 
 async function getDailyInsight(entry) {
   try {
@@ -2723,14 +2892,354 @@ async function getDailyInsight(entry) {
       body: JSON.stringify({ type: 'daily', entries: [entry, ...entries.slice(0, 6)] })
     });
     const data = await res.json();
-    if (data.insight) {
-      document.getElementById('ai-insight-text').textContent = data.insight;
-      document.getElementById('ai-insight-card').style.display = 'block';
-      document.getElementById('ai-insight-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (data.insight) renderDailyInsight(data.insight);
   } catch (err) {
     console.error('Daily insight error:', err);
   }
+}
+
+function renderDailyInsight(insight) {
+  const meta = TIER_META[insight.tier] || TIER_META.light;
+
+  const badgeHost = document.getElementById('ai-tier-badge');
+  badgeHost.innerHTML = '';
+  const badge = document.createElement('span');
+  badge.className = 'tier-badge ' + meta.cls;
+  badge.textContent = meta.label;
+  badgeHost.appendChild(badge);
+
+  document.getElementById('ai-insight-headline').textContent = insight.headline || '';
+  document.getElementById('ai-insight-text').textContent = insight.insight || '';
+
+  const actionEl = document.getElementById('ai-insight-action');
+  actionEl.innerHTML = '';
+  if (insight.action) {
+    const box = document.createElement('div');
+    box.className = 'insight-action';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Next step';
+    box.appendChild(strong);
+    box.appendChild(document.createTextNode(insight.action));
+    actionEl.appendChild(box);
+    actionEl.style.display = 'block';
+  } else {
+    actionEl.style.display = 'none';
+  }
+
+  const flagEl = document.getElementById('ai-insight-flag');
+  flagEl.innerHTML = '';
+  if (insight.flag) {
+    const box = document.createElement('div');
+    box.className = 'insight-flag';
+    const strong = document.createElement('strong');
+    strong.textContent = '🚨 Worth a check-in';
+    box.appendChild(strong);
+    box.appendChild(document.createTextNode(insight.flag));
+    flagEl.appendChild(box);
+    flagEl.style.display = 'block';
+  } else {
+    flagEl.style.display = 'none';
+  }
+
+  document.getElementById('ai-insight-card').style.display = 'block';
+  document.getElementById('ai-insight-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Mini SVG charts (no external dependency) ──────────
+
+const CHART_COLORS = { teal:'#6FAFA9', lavender:'#9A90BC', sage:'#5E8C6A', gold:'#D8A84A', terracotta:'#C97567', navy:'#203A55', red:'#b85252' };
+
+function escapeXml(s) {
+  return String(s).replace(/[<>&'"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+}
+function truncateLabel(s, n) { s = String(s); return s.length > n ? s.slice(0, n-1) + '…' : s; }
+function noDataSVG(msg) { return '<div style="font-size:0.78rem;color:var(--text-soft);padding:8px 4px">' + escapeXml(msg) + '</div>'; }
+
+function buildLineChartSVG(labels, series, opts) {
+  opts = opts || {};
+  const W = 320, H = 130, padL = 30, padR = 10, padT = 10, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  let allVals = [];
+  series.forEach(s => s.values.forEach(v => { if (v != null && !isNaN(v)) allVals.push(v); }));
+  if (opts.threshold != null) allVals.push(opts.threshold);
+  if (!allVals.length) return noDataSVG('Not enough data yet');
+
+  let minV = opts.yMin != null ? opts.yMin : Math.min.apply(null, allVals);
+  let maxV = opts.yMax != null ? opts.yMax : Math.max.apply(null, allVals);
+  if (minV === maxV) { minV -= 1; maxV += 1; }
+  const pad = (maxV - minV) * 0.12;
+  if (opts.yMin == null) minV -= pad;
+  if (opts.yMax == null) maxV += pad;
+
+  const n = labels.length;
+  const xStep = n > 1 ? plotW / (n - 1) : 0;
+  const xAt = i => padL + i * xStep;
+  const yAt = v => padT + plotH - ((v - minV) / (maxV - minV)) * plotH;
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block">';
+  svg += '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
+  svg += '<line x1="' + padL + '" y1="' + (padT+plotH) + '" x2="' + (padL+plotW) + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
+
+  if (opts.threshold != null) {
+    const ty = yAt(opts.threshold);
+    svg += '<line x1="' + padL + '" y1="' + ty + '" x2="' + (padL+plotW) + '" y2="' + ty + '" stroke="' + (opts.thresholdColor||CHART_COLORS.red) + '" stroke-width="1.3" stroke-dasharray="4,3"/>';
+    svg += '<text x="' + (padL+plotW) + '" y="' + (ty-3) + '" font-size="7.5" fill="' + (opts.thresholdColor||CHART_COLORS.red) + '" text-anchor="end">' + escapeXml(opts.thresholdLabel || opts.threshold) + '</text>';
+  }
+
+  series.forEach(s => {
+    const pts = [];
+    s.values.forEach((v,i) => { if (v != null && !isNaN(v)) pts.push(xAt(i) + ',' + yAt(v).toFixed(1)); });
+    if (pts.length) {
+      svg += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + s.color + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      s.values.forEach((v,i) => { if (v != null && !isNaN(v)) svg += '<circle cx="' + xAt(i) + '" cy="' + yAt(v).toFixed(1) + '" r="2.6" fill="' + s.color + '"/>'; });
+    }
+  });
+
+  const labelIdxs = n <= 5 ? labels.map((_,i)=>i) : [0, Math.floor((n-1)/2), n-1];
+  labelIdxs.forEach(i => {
+    svg += '<text x="' + xAt(i) + '" y="' + (H-4) + '" font-size="8" fill="#5a5470" text-anchor="middle">' + escapeXml(labels[i]) + '</text>';
+  });
+
+  if (series.length > 1) {
+    let lx = padL;
+    series.forEach(s => {
+      svg += '<circle cx="' + lx + '" cy="4" r="3" fill="' + s.color + '"/>';
+      svg += '<text x="' + (lx+6) + '" y="7" font-size="7.5" fill="#5a5470">' + escapeXml(s.name) + '</text>';
+      lx += 14 + s.name.length * 4.3;
+    });
+  }
+
+  svg += '</svg>';
+  return svg;
+}
+
+function buildBarChartSVG(labels, values, opts) {
+  opts = opts || {};
+  const W = 320, H = 130, padL = 24, padR = 10, padT = 10, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const valid = values.filter(v => v != null && !isNaN(v));
+  if (!valid.length) return noDataSVG('Not enough data yet');
+
+  const maxV = opts.yMax || Math.max.apply(null, valid) * 1.15;
+  const n = labels.length;
+  const slot = plotW / n;
+  const barW = Math.min(28, slot * 0.6);
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block">';
+  svg += '<line x1="' + padL + '" y1="' + (padT+plotH) + '" x2="' + (padL+plotW) + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
+
+  values.forEach((v,i) => {
+    if (v == null || isNaN(v)) return;
+    const h = Math.max(2, (v / maxV) * plotH);
+    const x = padL + i*slot + (slot-barW)/2;
+    const y = padT + plotH - h;
+    svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="' + (opts.color||CHART_COLORS.teal) + '"/>';
+  });
+
+  const labelIdxs = n <= 5 ? labels.map((_,i)=>i) : [0, Math.floor((n-1)/2), n-1];
+  labelIdxs.forEach(i => {
+    svg += '<text x="' + (padL + i*slot + slot/2).toFixed(1) + '" y="' + (H-4) + '" font-size="8" fill="#5a5470" text-anchor="middle">' + escapeXml(labels[i]) + '</text>';
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+function buildHBarChartSVG(items) {
+  if (!items || !items.length) return noDataSVG('No symptom data yet');
+  const maxCount = Math.max.apply(null, items.map(it => it[1]));
+  const rowH = 20, gap = 7, labelW = 96, padR = 26, W = 320;
+  const H = items.length * (rowH+gap) - gap + 6;
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block">';
+  items.forEach((it, i) => {
+    const label = it[0], count = it[1];
+    const y = i*(rowH+gap);
+    const barMaxW = W - labelW - padR;
+    const barW = Math.max(3, (count / maxCount) * barMaxW);
+    svg += '<text x="0" y="' + (y+rowH/2+3) + '" font-size="9" fill="#5a5470">' + escapeXml(truncateLabel(label, 13)) + '</text>';
+    svg += '<rect x="' + labelW + '" y="' + y + '" width="' + barW.toFixed(1) + '" height="' + rowH + '" rx="4" fill="' + CHART_COLORS.lavender + '"/>';
+    svg += '<text x="' + (labelW+barW+5).toFixed(1) + '" y="' + (y+rowH/2+3) + '" font-size="9" fill="#1e1e2e">' + count + '</text>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function renderWeeklyCharts(chartData, stats) {
+  const host = document.getElementById('ai-result-charts');
+  host.innerHTML = '';
+  if (!chartData || !chartData.dates || !chartData.dates.length) return;
+
+  const blocks = [
+    { title: '🥄 Spoon Count', svg: buildBarChartSVG(chartData.dates, chartData.spoons, { color: CHART_COLORS.teal, yMax: 12 }) },
+    { title: '😴 Sleep — Hours & Score', svg: buildLineChartSVG(chartData.dates, [
+        { values: chartData.sleepHours, color: CHART_COLORS.lavender, name: 'Hours' },
+        { values: (chartData.sleepScore||[]).map(v => v != null ? v/10 : null), color: CHART_COLORS.gold, name: 'Score÷10' }
+      ]) },
+    { title: '🫁 SpO₂ Low', svg: buildLineChartSVG(chartData.dates, [
+        { values: chartData.spo2Low, color: CHART_COLORS.terracotta, name: 'SpO2 Low' }
+      ], { threshold: 88, thresholdColor: CHART_COLORS.red, thresholdLabel: '88% threshold', yMin: 60, yMax: 100 }) },
+    { title: '💓 HRV Trend', svg: buildLineChartSVG(chartData.dates, [
+        { values: chartData.hrv, color: CHART_COLORS.navy, name: 'HRV (ms)' }
+      ]) },
+    { title: '👟 Steps', svg: buildBarChartSVG(chartData.dates, chartData.steps, { color: CHART_COLORS.sage }) },
+    { title: '💧 Water Intake (oz)', svg: buildBarChartSVG(chartData.dates, chartData.waterOz, { color: CHART_COLORS.teal }) }
+  ];
+
+  if (stats && stats.topSymptoms && stats.topSymptoms.length) {
+    blocks.push({ title: '📋 Most Frequent Symptoms', svg: buildHBarChartSVG(stats.topSymptoms) });
+  }
+
+  blocks.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'chart-block';
+    const title = document.createElement('div');
+    title.className = 'chart-title';
+    title.textContent = b.title;
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-svg-wrap';
+    wrap.innerHTML = b.svg;
+    div.appendChild(title);
+    div.appendChild(wrap);
+    host.appendChild(div);
+  });
+}
+
+// ── Provider report (specialty + date range + portal message) ──
+
+const SPECIALTY_LABELS = { pcp:'PCP', rheum:'Rheumatology', cardiology:'Cardiology', pulmonary:'Pulmonology', gi:'GI', gu:'GU', gyn:'GYN' };
+let selectedSpecialty = 'rheum';
+let selectedDateRange = 'last30';
+
+function toggleProviderPicker() {
+  const panel = document.getElementById('provider-picker-panel');
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if (show) {
+    selectSpecialty(selectedSpecialty);
+    selectDateRange(selectedDateRange);
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function selectSpecialty(key) {
+  selectedSpecialty = key;
+  document.querySelectorAll('#specialty-pills .pill-btn').forEach(b => {
+    b.classList.toggle('pill-selected', b.dataset.specialty === key);
+  });
+}
+
+function selectDateRange(key) {
+  selectedDateRange = key;
+  document.querySelectorAll('#daterange-pills .pill-btn').forEach(b => {
+    b.classList.toggle('pill-selected', b.dataset.range === key);
+  });
+  document.getElementById('sincevisit-input').style.display = key === 'sincevisit' ? 'flex' : 'none';
+  document.getElementById('custom-range-inputs').style.display = key === 'custom' ? 'flex' : 'none';
+}
+
+async function generateProviderReport() {
+  const entries = getEntries();
+  if (!entries.length) { alert('No entries to generate a report from.'); return; }
+
+  let cutoffStart = null, cutoffEnd = null, lastVisit = null, rangeLabel = '';
+  const now = new Date();
+
+  if (['last30','last60','last90'].includes(selectedDateRange)) {
+    const days = { last30:30, last60:60, last90:90 }[selectedDateRange];
+    cutoffStart = new Date(now); cutoffStart.setDate(cutoffStart.getDate() - days);
+    rangeLabel = 'last ' + days + ' days';
+  } else if (selectedDateRange === 'sincevisit') {
+    const v = document.getElementById('last-visit-date').value;
+    if (!v) { alert('Enter the date of your last visit.'); return; }
+    cutoffStart = new Date(v);
+    lastVisit = v;
+    rangeLabel = 'since last visit (' + new Date(v).toLocaleDateString() + ')';
+  } else if (selectedDateRange === 'custom') {
+    const s = document.getElementById('custom-start-date').value;
+    const e = document.getElementById('custom-end-date').value;
+    if (!s || !e) { alert('Pick both a start and end date.'); return; }
+    cutoffStart = new Date(s);
+    cutoffEnd = new Date(e);
+    cutoffEnd.setHours(23,59,59,999);
+    rangeLabel = new Date(s).toLocaleDateString() + ' – ' + new Date(e).toLocaleDateString();
+  }
+
+  const reportEntries = entries.filter(en => {
+    const d = new Date(en.date);
+    if (cutoffStart && d < cutoffStart) return false;
+    if (cutoffEnd && d > cutoffEnd) return false;
+    return true;
+  });
+  if (!reportEntries.length) { alert('No entries in that date range.'); return; }
+
+  const specialtyName = SPECIALTY_LABELS[selectedSpecialty];
+  const btn = document.getElementById('generate-report-btn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+
+  document.getElementById('provider-picker-panel').style.display = 'none';
+  document.getElementById('provider-result-panel').style.display = 'block';
+  document.getElementById('provider-result-title').textContent = '📋 ' + specialtyName + ' Report';
+  document.getElementById('portal-msg-text').textContent = '✨ Generating…';
+  document.getElementById('portal-msg-count').textContent = '';
+  document.getElementById('full-report-text').textContent = '';
+  document.getElementById('full-report-text').style.display = 'none';
+  document.getElementById('copy-full-report-btn').style.display = 'none';
+  document.getElementById('report-toggle-btn').textContent = '▾ View full clinical report';
+  document.getElementById('provider-result-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'report',
+        entries: reportEntries,
+        specialty: selectedSpecialty,
+        dateRange: rangeLabel + ' (' + reportEntries.length + ' entries)',
+        lastVisit
+      })
+    });
+    const data = await res.json();
+    if (data.portalMessage) {
+      document.getElementById('portal-msg-text').textContent = data.portalMessage;
+      document.getElementById('portal-msg-count').textContent = data.portalMessage.length + ' / 200 chars';
+      document.getElementById('full-report-text').textContent = data.report || '';
+    } else throw new Error(data.error || 'No response');
+  } catch (err) {
+    document.getElementById('portal-msg-text').textContent = 'Report failed: ' + err.message;
+    console.error(err);
+  }
+
+  btn.disabled = false; btn.textContent = 'Generate Report';
+}
+
+function toggleFullReport() {
+  const el = document.getElementById('full-report-text');
+  const btn = document.getElementById('report-toggle-btn');
+  const copyBtn = document.getElementById('copy-full-report-btn');
+  const show = el.style.display === 'none';
+  el.style.display = show ? 'block' : 'none';
+  copyBtn.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? '▴ Hide full clinical report' : '▾ View full clinical report';
+}
+
+function copyPortalMessage(btn) {
+  const text = document.getElementById('portal-msg-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function copyFullReport() {
+  const text = document.getElementById('full-report-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-full-report-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy Full Report', 2000);
+  });
 }
 
 // ── LIGHTBOX ─────────────────────────────────────────
