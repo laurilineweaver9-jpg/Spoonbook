@@ -2955,9 +2955,15 @@ function escapeXml(s) {
 function truncateLabel(s, n) { s = String(s); return s.length > n ? s.slice(0, n-1) + '…' : s; }
 function noDataSVG(msg) { return '<div style="font-size:0.78rem;color:var(--text-soft);padding:8px 4px">' + escapeXml(msg) + '</div>'; }
 
+function formatTickValue(v) {
+  if (Math.abs(v) >= 100) return Math.round(v).toString();
+  if (Number.isInteger(v)) return v.toString();
+  return v.toFixed(1);
+}
+
 function buildLineChartSVG(labels, series, opts) {
   opts = opts || {};
-  const W = 320, H = 130, padL = 30, padR = 10, padT = 10, padB = 20;
+  const W = 320, H = 130, padL = 34, padR = 10, padT = 10, padB = 20;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   let allVals = [];
   series.forEach(s => s.values.forEach(v => { if (v != null && !isNaN(v)) allVals.push(v); }));
@@ -2977,6 +2983,16 @@ function buildLineChartSVG(labels, series, opts) {
   const yAt = v => padT + plotH - ((v - minV) / (maxV - minV)) * plotH;
 
   let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block">';
+
+  // Y-axis scale: gridlines + tick labels
+  const tickCount = 4;
+  for (let t = 0; t <= tickCount; t++) {
+    const tv = minV + (maxV - minV) * (t / tickCount);
+    const ty = yAt(tv);
+    svg += '<line x1="' + padL + '" y1="' + ty.toFixed(1) + '" x2="' + (padL+plotW) + '" y2="' + ty.toFixed(1) + '" stroke="#eee" stroke-width="1"/>';
+    svg += '<text x="' + (padL-5) + '" y="' + (ty+2.7).toFixed(1) + '" font-size="7" fill="#8a8398" text-anchor="end">' + formatTickValue(tv) + '</text>';
+  }
+
   svg += '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
   svg += '<line x1="' + padL + '" y1="' + (padT+plotH) + '" x2="' + (padL+plotW) + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
 
@@ -3015,7 +3031,7 @@ function buildLineChartSVG(labels, series, opts) {
 
 function buildBarChartSVG(labels, values, opts) {
   opts = opts || {};
-  const W = 320, H = 130, padL = 24, padR = 10, padT = 10, padB = 20;
+  const W = 320, H = 130, padL = 30, padR = 10, padT = 10, padB = 20;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const valid = values.filter(v => v != null && !isNaN(v));
   if (!valid.length) return noDataSVG('Not enough data yet');
@@ -3026,6 +3042,16 @@ function buildBarChartSVG(labels, values, opts) {
   const barW = Math.min(28, slot * 0.6);
 
   let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block">';
+
+  // Y-axis scale: gridlines + tick labels (0 to maxV)
+  const tickCount = 4;
+  for (let t = 0; t <= tickCount; t++) {
+    const tv = maxV * (t / tickCount);
+    const ty = padT + plotH - (tv / maxV) * plotH;
+    svg += '<line x1="' + padL + '" y1="' + ty.toFixed(1) + '" x2="' + (padL+plotW) + '" y2="' + ty.toFixed(1) + '" stroke="#eee" stroke-width="1"/>';
+    svg += '<text x="' + (padL-5) + '" y="' + (ty+2.7).toFixed(1) + '" font-size="7" fill="#8a8398" text-anchor="end">' + formatTickValue(tv) + '</text>';
+  }
+
   svg += '<line x1="' + padL + '" y1="' + (padT+plotH) + '" x2="' + (padL+plotW) + '" y2="' + (padT+plotH) + '" stroke="#ddd" stroke-width="1"/>';
 
   values.forEach((v,i) => {
