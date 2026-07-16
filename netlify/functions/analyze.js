@@ -316,42 +316,59 @@ exports.handler = async function(event, context) {
       var reportSystem = SYSTEM_BASE + ' ' + specialtyLens;
 
       // Generate full report
-      var fullReport = await callClaude(reportSystem,
-        'Generate a ' + specialtyName + ' visit report for Lauri covering ' + dateRange + ' (' + entries.length + ' entries).\n\n' +
-        'STATISTICS:\n' +
-        'Avg scale: ' + stats.avgES + '/10 | Avg spoons: ' + stats.avgSpoons + '/12 | Avg pain: ' + stats.avgPain + '/10\n' +
-        (stats.avgBpSys ? 'BP avg: ' + stats.avgBpSys + '/' + stats.avgBpDia + '\n' : '') +
-        'HRV avg: ' + stats.avgHRV + 'ms\n' +
-        'SpO2 avg: ' + stats.avgSpo2 + '% | Lowest SpO2: ' + stats.minSpo2 + '%\n' +
-        (stats.avgSleepHours ? 'Sleep avg: ' + stats.avgSleepHours + 'h | Sleep score avg: ' + stats.avgSleepScore + '\n' : '') +
-        (stats.avgCpapHours ? 'CPAP avg: ' + stats.avgCpapHours + 'h | CPAP score avg: ' + stats.avgCpapScore + '\n' : '') +
-        'Flare days: ' + stats.flares + ' | O2 days: ' + stats.o2Days + '\n' +
-        (stats.avgCaffeine ? 'Avg caffeine: ' + stats.avgCaffeine + ' cups/day\n' : '') +
-        (stats.avgWaterOz ? 'Avg water: ' + stats.avgWaterOz + 'oz/day\n' : '') +
-        (stats.avgAlcohol ? 'Avg alcohol: ' + stats.avgAlcohol + ' drinks/day\n' : '') +
-        (stats.avgCalories ? 'Avg calories: ' + stats.avgCalories + '/day\n' : '') +
-        (stats.avgSteps ? 'Avg steps: ' + stats.avgSteps + '/day\n' : '') +
-        (stats.proteinTrackedDays ? 'Hit 75g+ protein: ' + stats.proteinGoalDays + ' of ' + stats.proteinTrackedDays + ' tracked days\n' : '') +
-        'Top symptoms: ' + stats.topSymptoms.map(function(s){ return s[0] + ' (' + Math.round(s[1]/stats.count*100) + '% of days)'; }).join(', ') + '\n' +
-        'Top factors: ' + stats.topFactors.map(function(f){ return f[0] + ' (' + f[1] + ' days)'; }).join(', ') + '\n' +
-        changesSince + '\n\nSELECTED ENTRIES:\n' + entries.slice(0, 15).map(formatEntry).join('\n---\n') +
-        '\n\nWrite a structured clinical report with these sections:\n' +
-        '## PERIOD SUMMARY\n## FUNCTIONAL STATUS\n## KEY FINDINGS\n## SYMPTOM ANALYSIS\n## TRENDS & PATTERNS\n## SINCE LAST VISIT (if applicable)\n## RECOMMENDED DISCUSSION POINTS\n\n' +
-        'Be specific with numbers. Clinical but readable. Flag anything urgent. Only mention intake/protein/steps data if it is relevant to ' + specialtyName + '.',
-        1500
-      );
+      var fullReport;
+      try {
+        fullReport = await callClaude(reportSystem,
+          'Generate a ' + specialtyName + ' visit report for Lauri covering ' + dateRange + ' (' + entries.length + ' entries).\n\n' +
+          'STATISTICS:\n' +
+          'Avg scale: ' + stats.avgES + '/10 | Avg spoons: ' + stats.avgSpoons + '/12 | Avg pain: ' + stats.avgPain + '/10\n' +
+          (stats.avgBpSys ? 'BP avg: ' + stats.avgBpSys + '/' + stats.avgBpDia + '\n' : '') +
+          'HRV avg: ' + stats.avgHRV + 'ms\n' +
+          'SpO2 avg: ' + stats.avgSpo2 + '% | Lowest SpO2: ' + stats.minSpo2 + '%\n' +
+          (stats.avgSleepHours ? 'Sleep avg: ' + stats.avgSleepHours + 'h | Sleep score avg: ' + stats.avgSleepScore + '\n' : '') +
+          (stats.avgCpapHours ? 'CPAP avg: ' + stats.avgCpapHours + 'h | CPAP score avg: ' + stats.avgCpapScore + '\n' : '') +
+          'Flare days: ' + stats.flares + ' | O2 days: ' + stats.o2Days + '\n' +
+          (stats.avgCaffeine ? 'Avg caffeine: ' + stats.avgCaffeine + ' cups/day\n' : '') +
+          (stats.avgWaterOz ? 'Avg water: ' + stats.avgWaterOz + 'oz/day\n' : '') +
+          (stats.avgAlcohol ? 'Avg alcohol: ' + stats.avgAlcohol + ' drinks/day\n' : '') +
+          (stats.avgCalories ? 'Avg calories: ' + stats.avgCalories + '/day\n' : '') +
+          (stats.avgSteps ? 'Avg steps: ' + stats.avgSteps + '/day\n' : '') +
+          (stats.proteinTrackedDays ? 'Hit 75g+ protein: ' + stats.proteinGoalDays + ' of ' + stats.proteinTrackedDays + ' tracked days\n' : '') +
+          'Top symptoms: ' + stats.topSymptoms.map(function(s){ return s[0] + ' (' + Math.round(s[1]/stats.count*100) + '% of days)'; }).join(', ') + '\n' +
+          'Top factors: ' + stats.topFactors.map(function(f){ return f[0] + ' (' + f[1] + ' days)'; }).join(', ') + '\n' +
+          changesSince + '\n\nSELECTED ENTRIES:\n' + entries.slice(0, 15).map(formatEntry).join('\n---\n') +
+          '\n\nWrite a structured clinical report with these sections:\n' +
+          '## PERIOD SUMMARY\n## FUNCTIONAL STATUS\n## KEY FINDINGS\n## SYMPTOM ANALYSIS\n## TRENDS & PATTERNS\n## SINCE LAST VISIT (if applicable)\n## RECOMMENDED DISCUSSION POINTS\n\n' +
+          'Be specific with numbers. Clinical but readable. Flag anything urgent. Only mention intake/protein/steps data if it is relevant to ' + specialtyName + '.',
+          1500
+        );
+      } catch (e) {
+        console.error('Full report generation failed:', e.stack || e.message);
+        throw new Error('Full report generation failed: ' + e.message);
+      }
 
       // Generate 200-character portal message
-      var portalMsg = await callClaude(reportSystem,
-        'Based on this data for a ' + specialtyName + ' visit:\n' +
-        'Period: ' + dateRange + ', ' + entries.length + ' entries\n' +
-        'Avg scale: ' + stats.avgES + '/10, Spoons: ' + stats.avgSpoons + '/12, Pain: ' + stats.avgPain + '/10\n' +
-        'HRV: ' + stats.avgHRV + 'ms, SpO2 avg: ' + stats.avgSpo2 + '%, SpO2 low: ' + stats.minSpo2 + '%\n' +
-        'Flares: ' + stats.flares + ', Top symptoms: ' + stats.topSymptoms.slice(0,4).map(function(s){return s[0];}).join(', ') + '\n' +
-        (stats.proteinTrackedDays ? 'Protein 75g+: ' + stats.proteinGoalDays + '/' + stats.proteinTrackedDays + ' days\n' : '') +
-        '\n\nWrite ONE patient portal message of MAXIMUM 200 characters total (including spaces). It must be dense with the most clinically relevant data for ' + specialtyName + '. No greeting, no sign-off. Just data. Count characters carefully.',
-        150
-      );
+      var portalMsg;
+      try {
+        portalMsg = await callClaude(reportSystem,
+          'Based on this data for a ' + specialtyName + ' visit:\n' +
+          'Period: ' + dateRange + ', ' + entries.length + ' entries\n' +
+          'Avg scale: ' + stats.avgES + '/10, Spoons: ' + stats.avgSpoons + '/12, Pain: ' + stats.avgPain + '/10\n' +
+          'HRV: ' + stats.avgHRV + 'ms, SpO2 avg: ' + stats.avgSpo2 + '%, SpO2 low: ' + stats.minSpo2 + '%\n' +
+          'Flares: ' + stats.flares + ', Top symptoms: ' + stats.topSymptoms.slice(0,4).map(function(s){return s[0];}).join(', ') + '\n' +
+          (stats.proteinTrackedDays ? 'Protein 75g+: ' + stats.proteinGoalDays + '/' + stats.proteinTrackedDays + ' days\n' : '') +
+          '\n\nWrite ONE patient portal message of MAXIMUM 200 characters total (including spaces). It must be dense with the most clinically relevant data for ' + specialtyName + '. No greeting, no sign-off. Just data. Count characters carefully.',
+          150
+        );
+      } catch (e) {
+        console.error('Portal message generation failed:', e.stack || e.message);
+        throw new Error('Portal message generation failed: ' + e.message);
+      }
+
+      if (typeof portalMsg !== 'string') {
+        console.error('Portal message was not a string:', JSON.stringify(portalMsg));
+        throw new Error('Portal message generation returned an unexpected response format.');
+      }
 
       return { statusCode: 200, headers: headers, body: JSON.stringify({
         report: fullReport,
@@ -377,7 +394,7 @@ exports.handler = async function(event, context) {
     return { statusCode: 400, headers: headers, body: JSON.stringify({ error: 'Unknown type: ' + type }) };
 
   } catch (err) {
-    console.error('Analysis error:', err.message);
+    console.error('Analysis error:', err.stack || err.message);
     return { statusCode: 500, headers: headers, body: JSON.stringify({ error: err.message }) };
   }
 };
