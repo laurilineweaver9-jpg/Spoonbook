@@ -1,13 +1,13 @@
 // netlify/functions/analyze.js
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
-const SYSTEM_BASE = 'You are a compassionate health analyst for Lauri, who has Relapsing Polychondritis, Seronegative RA, Psoriatic Arthritis, Complex Pain Syndrome, chronic hypoxia on home O2, OSA on CPAP, borderline PHTN, and steroid-induced myopathy. She tracks health in The Spoonbook. Her existential scale: 1=Utopia, 10=Medical emergency. Spoons 1-12 = daily energy. HRV of 10-14ms is critically low for her. SpO2 below 88% is dangerous. Post-exertional malaise is real — Pilates often causes next-day crashes. She also tracks daily intake (caffeine, water, alcohol, calories, steps) and whether she hit 75g+ protein — protein matters because of her steroid-induced myopathy (muscle wasting), hydration matters given Cellcept and PRN Lasix, and alcohol/caffeine can affect BP, HRV, and sleep. She sometimes uploads continuous overnight pulse oximeter data, giving desaturation event counts and % of time below 88% — this is more precise than a single daily SpO2 reading, so use it when present. Be warm, direct, specific to her data. Never generic. Flag concerns clearly but calmly.';
+const SYSTEM_BASE = 'You are a compassionate health analyst for Lauri, who has Relapsing Polychondritis, Seronegative RA, Psoriatic Arthritis, Complex Pain Syndrome, chronic hypoxia on home O2, OSA on CPAP, borderline PHTN, and steroid-induced myopathy. She tracks health in The Spoonbook. Her existential scale: 1=Utopia, 10=Medical emergency. Spoons 1-12 = daily energy. HRV of 10-14ms is critically low for her. SpO2 below 88% is dangerous. Post-exertional malaise is real — Pilates often causes next-day crashes. She also tracks daily intake (caffeine, water, alcohol, calories, steps) and whether she hit 75g+ protein — protein matters because of her steroid-induced myopathy (muscle wasting), hydration matters given Cellcept and PRN Lasix, and alcohol/caffeine can affect BP, HRV, and sleep. She sometimes uploads continuous pulse oximeter data — day or night, sometimes multiple sessions in one day — giving desaturation event counts and % of time below 88% per session; this is more precise than a single daily SpO2 reading, so use it when present. Be warm, direct, specific to her data. Never generic. Flag concerns clearly but calmly.';
 
 const SPECIALTY_LENSES = {
   pcp: 'Focus on: overall functional trend, weight changes, mood patterns, medication adherence, sleep quality, hydration and caffeine/alcohol intake, protein adequacy relative to the 75g/day goal (relevant to steroid-induced myopathy), step count as a functional proxy, and any symptoms that cut across multiple systems. Give a complete picture.',
   rheum: 'Focus on: existential scale trends, flare activity, joint pain frequency, symptom patterns (ear, eye, cartilage), post-exertional crashes after Pilates, PRN medication use, factors correlating with flares, and protein intake relative to the 75g/day goal (important for preserving muscle given steroid-induced myopathy). Current meds: Cellcept 3g, Cimzia 400mg, Prednisone variable, Lyrica, Tegretol, Colchicine, Celebrex.',
-  cardiology: 'Focus on: BP range and trends (she runs low — systolic often 98-118), HRV trends (her baseline is critically low at 10-16ms), SpO2 average and low values, overnight desaturation event frequency and duration from her O2 monitor when available, O2 usage, activity tolerance, any pre-syncope or syncope episodes, palpitation symptoms, and caffeine/alcohol intake in relation to BP, HRV, and palpitations.',
-  pulmonary: 'Focus on: SpO2 average and LOW values (flag anything below 88%), overnight desaturation events and % of time below 88% from her continuous O2 monitor when available (this is more clinically detailed than a single daily SpO2 reading), CPAP hours and score trends, breathlessness frequency, activity and its effect on symptoms (including step count as an objective functional measure), O2 usage patterns, sleep quality in context of OSA.',
+  cardiology: 'Focus on: BP range and trends (she runs low — systolic often 98-118), HRV trends (her baseline is critically low at 10-16ms), SpO2 average and low values, desaturation event frequency and duration from her O2 monitor sessions when available (day or night), O2 usage, activity tolerance, any pre-syncope or syncope episodes, palpitation symptoms, and caffeine/alcohol intake in relation to BP, HRV, and palpitations.',
+  pulmonary: 'Focus on: SpO2 average and LOW values (flag anything below 88%), desaturation events and % of time below 88% from her continuous O2 monitor sessions when available — day or night, sometimes multiple per day (this is more clinically detailed than a single daily SpO2 reading), CPAP hours and score trends, breathlessness frequency, activity and its effect on symptoms (including step count as an objective functional measure), O2 usage patterns, sleep quality in context of OSA.',
   gi: 'Focus on: nausea episodes and frequency, any GI symptoms mentioned in notes, medication timing issues (she takes many meds that affect GI), weight trends, calorie intake, alcohol and caffeine intake, and any food-related patterns in notes.',
   gu: 'Focus on: any urinary symptoms, fluid retention patterns, weight fluctuations, Lasix PRN use, edema mentions in notes, daily water intake (oz), and alcohol use in relation to fluid balance.',
   gyn: 'Focus on: mood patterns and hormonal correlations, weight trends, any relevant symptoms. She is surgically menopausal on estradiol gel 1mg daily.'
@@ -44,14 +44,22 @@ function formatEntry(e) {
   if (e.spo2Low || e.spo2_low) lines.push('SpO2 low: ' + (e.spo2Low || e.spo2_low) + '%' + (parseInt(e.spo2Low || e.spo2_low) < 88 ? ' [BELOW THRESHOLD]' : ''));
   if (e.weight) lines.push('Weight: ' + e.weight + 'lbs');
   if (e.o2 === 'yes') lines.push('On supplemental O2: Yes');
-  var o2s = e.o2Session || e.o2_session;
-  if (o2s) {
-    lines.push('Overnight O2 monitor: avg ' + o2s.avgSpo2 + '%, low ' + o2s.minSpo2 + '%, ' +
-      o2s.pctUnder88 + '% of time below ' + o2s.thresholdPct + '%, ' + o2s.desatEvents +
-      ' desaturation event(s)' + (o2s.desatEvents ? ' (longest ' + Math.round(o2s.longestDesatSec/60) + ' min)' : '') +
-      ', pulse avg ' + (o2s.avgPulse != null ? o2s.avgPulse + 'bpm' : 'n/a') +
-      (o2s.minPulse != null ? ' (range ' + o2s.minPulse + '-' + o2s.maxPulse + ')' : '') +
-      ', ' + Math.round(o2s.durationSec/360)/10 + 'h recorded.');
+  var o2Sessions = e.o2Sessions || e.o2_sessions || (e.o2Session ? [e.o2Session] : (e.o2_session ? [e.o2_session] : []));
+  if (o2Sessions && o2Sessions.length) {
+    o2Sessions.forEach(function(o2s, idx) {
+      var timeLabel = '';
+      try {
+        var st = new Date(o2s.startTime);
+        var et = new Date(o2s.endTime);
+        timeLabel = ' [' + st.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + '–' + et.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ']';
+      } catch (e) {}
+      lines.push('O2 monitor session ' + (idx+1) + timeLabel + ': avg ' + o2s.avgSpo2 + '%, low ' + o2s.minSpo2 + '%, ' +
+        o2s.pctUnder88 + '% of time below ' + o2s.thresholdPct + '%, ' + o2s.desatEvents +
+        ' desaturation event(s)' + (o2s.desatEvents ? ' (longest ' + Math.round(o2s.longestDesatSec/60) + ' min)' : '') +
+        ', pulse avg ' + (o2s.avgPulse != null ? o2s.avgPulse + 'bpm' : 'n/a') +
+        (o2s.minPulse != null ? ' (range ' + o2s.minPulse + '-' + o2s.maxPulse + ')' : '') +
+        ', ' + Math.round(o2s.durationSec/360)/10 + 'h recorded.');
+    });
   }
   var caffeine = e.caffeineCups || e.caffeine_cups;
   if (caffeine) lines.push('Caffeine: ' + caffeine + ' cups');
@@ -152,11 +160,13 @@ function calcStats(entries) {
       var lbl = dayRating.label || dayRating;
       stats.dayRatingCounts[lbl] = (stats.dayRatingCounts[lbl] || 0) + 1;
     }
-    var o2s = e.o2Session || e.o2_session;
-    if (o2s) {
-      stats.o2SessionCount++;
-      stats.desatEventsList.push(o2s.desatEvents);
-      stats.pctUnder88List.push(o2s.pctUnder88);
+    var o2Sessions = e.o2Sessions || e.o2_sessions || (e.o2Session ? [e.o2Session] : (e.o2_session ? [e.o2_session] : []));
+    if (o2Sessions && o2Sessions.length) {
+      o2Sessions.forEach(function(o2s) {
+        stats.o2SessionCount++;
+        stats.desatEventsList.push(o2s.desatEvents);
+        stats.pctUnder88List.push(o2s.pctUnder88);
+      });
     }
   });
   if (esCount) stats.avgES = (stats.avgES/esCount).toFixed(1);
@@ -267,7 +277,7 @@ exports.handler = async function(event, context) {
       });
       Object.keys(byDate).sort(function(a,b){ return new Date(byDate[a].date) - new Date(byDate[b].date); }).forEach(function(d) {
         var e = byDate[d];
-        var o2s = e.o2Session || e.o2_session;
+        var o2Sessions = e.o2Sessions || e.o2_sessions || (e.o2Session ? [e.o2Session] : (e.o2_session ? [e.o2_session] : []));
         chartData.dates.push(d);
         chartData.spoons.push(e.spoons || null);
         chartData.es.push(e.es || null);
@@ -278,7 +288,7 @@ exports.handler = async function(event, context) {
         chartData.hrv.push(parseInt(e.hrv) || null);
         chartData.steps.push(parseInt(e.steps) || null);
         chartData.waterOz.push(parseFloat(e.waterOz || e.water_oz) || null);
-        chartData.desatEvents.push(o2s ? o2s.desatEvents : null);
+        chartData.desatEvents.push(o2Sessions.length ? o2Sessions.reduce(function(a,s){return a+(s.desatEvents||0);}, 0) : null);
       });
 
       var summary = await callClaude(SYSTEM_BASE,
@@ -296,12 +306,12 @@ exports.handler = async function(event, context) {
         (stats.avgCalories ? 'Avg calories: ' + stats.avgCalories + '/day\n' : '') +
         (stats.avgSteps ? 'Avg steps: ' + stats.avgSteps + '/day\n' : '') +
         (stats.proteinTrackedDays ? 'Hit 75g+ protein: ' + stats.proteinGoalDays + ' of ' + stats.proteinTrackedDays + ' tracked days\n' : '') +
-        (stats.o2SessionCount ? 'Overnight O2 monitor sessions: ' + stats.o2SessionCount + ' | Avg desat events/night: ' + stats.avgDesatEvents + ' | Avg % time <88%: ' + stats.avgPctUnder88 + '%\n' : '') +
+        (stats.o2SessionCount ? 'O2 monitor sessions: ' + stats.o2SessionCount + ' | Avg desat events/session: ' + stats.avgDesatEvents + ' | Avg % time <88%: ' + stats.avgPctUnder88 + '%\n' : '') +
         'Top symptoms: ' + stats.topSymptoms.map(function(s){ return s[0] + ' (' + s[1] + ' days)'; }).join(', ') + '\n\n' +
         'Write a weekly health narrative covering:\n' +
         '1. Overall trend and what the numbers actually mean for her\n' +
         '2. Sleep and CPAP patterns\n' +
-        '3. SpO2 and HRV — any concerning patterns, including overnight desaturation event trends if O2 monitor data is present\n' +
+        '3. SpO2 and HRV — any concerning patterns, including desaturation event trends across O2 monitor sessions if present\n' +
         '4. What factors or activities correlated with worse days\n' +
         '5. What correlated with better days\n' +
         '6. Intake patterns worth noting — hydration, caffeine, alcohol, protein goal (75g+), steps — and anything that seems linked to how she felt\n' +
@@ -354,7 +364,7 @@ exports.handler = async function(event, context) {
         (stats.avgCalories ? 'Avg calories: ' + stats.avgCalories + '/day\n' : '') +
         (stats.avgSteps ? 'Avg steps: ' + stats.avgSteps + '/day\n' : '') +
         (stats.proteinTrackedDays ? 'Hit 75g+ protein: ' + stats.proteinGoalDays + ' of ' + stats.proteinTrackedDays + ' tracked days\n' : '') +
-        (stats.o2SessionCount ? 'Overnight O2 monitor sessions: ' + stats.o2SessionCount + ' | Avg desat events/night: ' + stats.avgDesatEvents + ' | Avg % time <88%: ' + stats.avgPctUnder88 + '%\n' : '') +
+        (stats.o2SessionCount ? 'O2 monitor sessions: ' + stats.o2SessionCount + ' | Avg desat events/session: ' + stats.avgDesatEvents + ' | Avg % time <88%: ' + stats.avgPctUnder88 + '%\n' : '') +
         'Top symptoms: ' + stats.topSymptoms.map(function(s){ return s[0] + ' (' + Math.round(s[1]/stats.count*100) + '% of days)'; }).join(', ') + '\n' +
         'Top factors: ' + stats.topFactors.map(function(f){ return f[0] + ' (' + f[1] + ' days)'; }).join(', ') + '\n' +
         changesSince + '\n\nSELECTED ENTRIES:\n' + entries.slice(0, 15).map(formatEntry).join('\n---\n') +
@@ -369,7 +379,7 @@ exports.handler = async function(event, context) {
         'HRV: ' + stats.avgHRV + 'ms, SpO2 avg: ' + stats.avgSpo2 + '%, SpO2 low: ' + stats.minSpo2 + '%\n' +
         'Flares: ' + stats.flares + ', Top symptoms: ' + stats.topSymptoms.slice(0,4).map(function(s){return s[0];}).join(', ') + '\n' +
         (stats.proteinTrackedDays ? 'Protein 75g+: ' + stats.proteinGoalDays + '/' + stats.proteinTrackedDays + ' days\n' : '') +
-        (stats.o2SessionCount ? 'Overnight desat events avg: ' + stats.avgDesatEvents + '/night (' + stats.o2SessionCount + ' nights monitored)\n' : '') +
+        (stats.o2SessionCount ? 'O2 monitor desat events avg: ' + stats.avgDesatEvents + '/session (' + stats.o2SessionCount + ' sessions monitored)\n' : '') +
         '\n\nWrite ONE patient portal message of MAXIMUM 200 characters total (including spaces). It must be dense with the most clinically relevant data for ' + specialtyName + '. No greeting, no sign-off. Just data. Count characters carefully.';
 
       // Run both Claude calls in PARALLEL (not sequentially) — cuts total wall-clock
@@ -415,7 +425,7 @@ exports.handler = async function(event, context) {
       var analysis = await callClaude(SYSTEM_BASE,
         'Analyze ' + entries.length + ' journal entries for Lauri.\n\n' +
         entries.map(formatEntry).join('\n---\n') +
-        '\n\nIdentify:\n1. Top 3 factors correlating with WORSE days (higher scale, more symptoms)\n2. Top 3 factors correlating with BETTER days\n3. Pilates impact — does it help or cause post-exertional crashes?\n4. Sleep quality effect on next-day function\n5. SpO2 low patterns — what precedes them\n6. HRV patterns — what days is it lowest\n7. Weather or environment correlations if noted\n8. Intake patterns — does caffeine, alcohol, or hydration correlate with symptom severity, sleep, or HRV? Is hitting the 75g+ protein goal associated with better function or lower pain?\n9. If overnight O2 monitor data is present on multiple nights, do nights with more desaturation events correlate with worse next-day scale, spoons, or pain?\n\nBe specific with numbers. Example: "On days when [factor] was logged, scale averaged X vs Y on other days."',
+        '\n\nIdentify:\n1. Top 3 factors correlating with WORSE days (higher scale, more symptoms)\n2. Top 3 factors correlating with BETTER days\n3. Pilates impact — does it help or cause post-exertional crashes?\n4. Sleep quality effect on next-day function\n5. SpO2 low patterns — what precedes them\n6. HRV patterns — what days is it lowest\n7. Weather or environment correlations if noted\n8. Intake patterns — does caffeine, alcohol, or hydration correlate with symptom severity, sleep, or HRV? Is hitting the 75g+ protein goal associated with better function or lower pain?\n9. If O2 monitor data is present across multiple sessions (day or night), do sessions with more desaturation events correlate with worse same-day or next-day scale, spoons, or pain?\n\nBe specific with numbers. Example: "On days when [factor] was logged, scale averaged X vs Y on other days."',
         1200
       );
       return { statusCode: 200, headers: headers, body: JSON.stringify({ analysis: analysis }) };
