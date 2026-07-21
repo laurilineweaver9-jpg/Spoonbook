@@ -59,6 +59,28 @@ function formatEntry(e) {
         ', pulse avg ' + (o2s.avgPulse != null ? o2s.avgPulse + 'bpm' : 'n/a') +
         (o2s.minPulse != null ? ' (range ' + o2s.minPulse + '-' + o2s.maxPulse + ')' : '') +
         ', ' + Math.round(o2s.durationSec/360)/10 + 'h recorded.');
+
+      // Full desaturation event list (capped to avoid pathological bloat on a
+      // very bad night) — gives the AI exact timing/severity per event rather
+      // than just a count.
+      if (o2s.desatEventList && o2s.desatEventList.length) {
+        var MAX_EVENTS_LISTED = 20;
+        var evList = o2s.desatEventList.slice(0, MAX_EVENTS_LISTED).map(function(ev) {
+          var es = new Date(ev.startTime).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+          return es + ' (' + ev.durationSec + 's, low ' + ev.lowSpo2 + '%)';
+        }).join(', ');
+        lines.push('  Desat events: ' + evList + (o2s.desatEventList.length > MAX_EVENTS_LISTED ? ', +' + (o2s.desatEventList.length - MAX_EVENTS_LISTED) + ' more' : ''));
+      }
+
+      // Hourly breakdown — cheap to include, gives real trend shape within
+      // the session instead of a single flat average.
+      if (o2s.hourlyBreakdown && o2s.hourlyBreakdown.length) {
+        var hourlyStr = o2s.hourlyBreakdown.map(function(h) {
+          var hLabel = new Date(h.hour).toLocaleTimeString('en-US', {hour:'numeric'});
+          return hLabel + ': avg ' + h.avgSpo2 + '%/low ' + h.minSpo2 + '%' + (h.avgPulse != null ? ', HR ' + h.avgPulse : '');
+        }).join('; ');
+        lines.push('  Hourly: ' + hourlyStr);
+      }
     });
   }
   var caffeine = e.caffeineCups || e.caffeine_cups;
@@ -429,6 +451,35 @@ exports.handler = async function(event, context) {
         1200
       );
       return { statusCode: 200, headers: headers, body: JSON.stringify({ analysis: analysis }) };
+    }
+
+    // ── O2 SESSION DEEP DIVE (single session, denser 5s-bin data) ────────
+    if (type === 'deepdive') {
+      var denseSeries = body.denseSeries || [];
+      if (!denseSeries.length) {
+        return { statusCode: 400, headers: headers, body: JSON.stringify({ error: 'No session data provided.' }) };
+      }
+      // Compact text representation: time, SpO2, pulse per 5-second bin.
+      // Bounded resolution (not literal 1-second raw data) so this reliably
+      // fits in a single request regardless of session length.
+      var seriesText = denseSeries.map(function(p) {
+        var t = new Date(p.t).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', second:'2-digit'});
+        return t + ',' + (p.spo2 != null ? p.spo2 : '--') + ',' + (p.pulse != null ? p.pulse : '--');
+      }).join('\n');
+
+      var deepAnalysis = await callClaude(SYSTEM_BASE,
+        'Here is one O2 monitor session at 5-second resolution (time, SpO2%, pulse bpm) — ' + denseSeries.length + ' data points:\n\n' +
+        'time,spo2,pulse\n' + seriesText +
+        '\n\nGive a detailed clinical read of this specific session:\n' +
+        '1. Overall trajectory — did SpO2 stay stable, trend down, or fluctuate?\n' +
+        '2. Every notable desaturation dip — approximate time, how low, how long it took to recover\n' +
+        '3. Pulse behavior during dips — did HR rise/fall in a way that suggests a specific pattern (e.g., compensatory tachycardia, bradycardia)?\n' +
+        '4. Any period of unusually erratic or noisy data that might indicate motion artifact vs a real physiological event\n' +
+        '5. Overall clinical impression of this specific session\n\n' +
+        'Be specific about timing. This is a detailed single-session review, not a summary — reference actual values from the data.',
+        1500
+      );
+      return { statusCode: 200, headers: headers, body: JSON.stringify({ analysis: deepAnalysis }) };
     }
 
     return { statusCode: 400, headers: headers, body: JSON.stringify({ error: 'Unknown type: ' + type }) };
