@@ -2539,7 +2539,7 @@ function saveO2Session() {
       console.log(dateStr + ' has ' + candidates.length + ' entries — merging into the one with id ' + (match && match.id));
     }
 
-    let sessionCount;
+    let sessionCount, savedEntryId;
     if (match) {
       // Migrate any legacy single-session field, then append this session
       if (!Array.isArray(match.o2Sessions)) match.o2Sessions = match.o2Session ? [match.o2Session] : [];
@@ -2547,6 +2547,7 @@ function saveO2Session() {
       match.o2Sessions.push(stats);
       recomputeEntrySpo2FromSessions(match);
       sessionCount = match.o2Sessions.length;
+      savedEntryId = match.id;
     } else {
       const newEntry = {
         id: Date.now(),
@@ -2558,10 +2559,17 @@ function saveO2Session() {
       recomputeEntrySpo2FromSessions(newEntry);
       entries.unshift(newEntry);
       sessionCount = 1;
+      savedEntryId = newEntry.id;
     }
 
     entries.sort((a, b) => new Date(b.date) - new Date(a.date));
     localStorage.setItem('lauriJournal', JSON.stringify(entries));
+
+    // Read back from localStorage to verify the write actually persisted —
+    // don't just trust that setItem succeeded silently.
+    const verify = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
+    const verifyEntry = verify.find(x => x.id === savedEntryId);
+    const verifyOk = !!(verifyEntry && verifyEntry.o2Sessions && verifyEntry.o2Sessions.length === sessionCount);
 
     const humanDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     btn.textContent = '✓ Saved!';
@@ -2570,8 +2578,16 @@ function saveO2Session() {
       pendingO2Session = null;
       document.getElementById('o2-preview').style.display = 'none';
       btn.disabled = false; btn.textContent = 'Save to Journal';
-      alert((match ? 'Updated your entry for ' : 'Created a new entry for ') + humanDate + ' — now has ' + sessionCount + ' O2 session' + (sessionCount>1?'s':'') + '.' +
-        (candidates.length > 1 ? '\n\nNote: there are ' + candidates.length + ' entries for this date — make sure you\'re looking at the right one, or delete any stray duplicates.' : ''));
+      alert(
+        'DEBUG INFO:\n' +
+        'Date: ' + humanDate + ' (' + dateStr + ')\n' +
+        'Action: ' + (match ? 'updated existing entry' : 'created new entry') + '\n' +
+        'Entry ID: ' + savedEntryId + '\n' +
+        'Sessions on this entry: ' + sessionCount + '\n' +
+        'Total entries in journal now: ' + entries.length + '\n' +
+        'Verified in localStorage: ' + (verifyOk ? 'YES ✓' : 'NO ✗ — something is wrong') +
+        (candidates.length > 1 ? '\n\nNote: ' + candidates.length + ' entries exist for this date.' : '')
+      );
     }, 600);
 
     renderEntries();
