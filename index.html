@@ -2562,12 +2562,15 @@ function saveO2Session() {
     entries.sort((a, b) => new Date(b.date) - new Date(a.date));
     localStorage.setItem('lauriJournal', JSON.stringify(entries));
 
+    const humanDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     btn.textContent = '✓ Saved!';
+    console.log('O2 session ' + (match ? 'merged into existing entry' : 'created new entry') + ' for ' + dateStr);
     setTimeout(() => {
       pendingO2Session = null;
       document.getElementById('o2-preview').style.display = 'none';
       btn.disabled = false; btn.textContent = 'Save to Journal';
-    }, 1200);
+      alert((match ? 'Updated your existing entry for ' : 'Created a new entry for ') + humanDate + '.');
+    }, 600);
 
     renderEntries();
     window.setTimeout(function() {
