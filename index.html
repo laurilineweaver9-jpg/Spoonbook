@@ -1234,6 +1234,14 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
     <button onclick="copyAIResult()" style="margin-top:12px;width:100%;padding:9px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text-soft);cursor:pointer">Copy to Clipboard</button>
   </div>
 
+  <div id="o2-deepdive-panel" style="display:none;margin-top:12px;background:white;border:1px solid var(--terracotta);border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(32,58,85,0.06)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--terracotta)">🔬 O2 Session Deep Dive</div>
+      <button onclick="document.getElementById('o2-deepdive-panel').style.display='none'" style="background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:1.1rem;padding:2px 6px">✕</button>
+    </div>
+    <div id="o2-deepdive-text" style="font-size:0.88rem;color:var(--text-soft);line-height:1.8;white-space:pre-wrap"></div>
+  </div>
+
   <!-- Past entries -->
   <div class="entries-title" style="margin-top:22px">
     Past Entries
@@ -2371,17 +2379,64 @@ function computeO2Stats(rows, thresholdPct) {
 
   // Desaturation "events": contiguous stretches under threshold lasting >=10s.
   // This is a simple descriptive threshold metric, not a validated clinical ODI.
+  // We track each individual event (not just count) so it can be reviewed in
+  // detail and given to the AI without needing raw second-by-second data.
   const MIN_EVENT_SEC = 10;
-  let underCount = 0, events = 0, longestRun = 0, currentRun = 0;
-  rows.forEach(r => {
+  let underCount = 0, longestRun = 0, currentRun = 0, runStartIdx = null;
+  const desatEventList = [];
+  rows.forEach(function(r, i) {
     if (r.spo2 != null && r.spo2 < thresholdPct) {
+      if (currentRun === 0) runStartIdx = i;
       currentRun++; underCount++;
     } else {
-      if (currentRun >= MIN_EVENT_SEC) { events++; longestRun = Math.max(longestRun, currentRun); }
+      if (currentRun >= MIN_EVENT_SEC) {
+        const eventRows = rows.slice(runStartIdx, runStartIdx + currentRun);
+        const eventSpo2 = eventRows.filter(er => er.spo2 != null).map(er => er.spo2);
+        desatEventList.push({
+          startTime: rows[runStartIdx].t.toISOString(),
+          endTime: rows[runStartIdx + currentRun - 1].t.toISOString(),
+          durationSec: currentRun,
+          lowSpo2: eventSpo2.length ? Math.min.apply(null, eventSpo2) : null
+        });
+        longestRun = Math.max(longestRun, currentRun);
+      }
       currentRun = 0;
     }
   });
-  if (currentRun >= MIN_EVENT_SEC) { events++; longestRun = Math.max(longestRun, currentRun); }
+  if (currentRun >= MIN_EVENT_SEC) {
+    const eventRows = rows.slice(runStartIdx, runStartIdx + currentRun);
+    const eventSpo2 = eventRows.filter(er => er.spo2 != null).map(er => er.spo2);
+    desatEventList.push({
+      startTime: rows[runStartIdx].t.toISOString(),
+      endTime: rows[runStartIdx + currentRun - 1].t.toISOString(),
+      durationSec: currentRun,
+      lowSpo2: eventSpo2.length ? Math.min.apply(null, eventSpo2) : null
+    });
+    longestRun = Math.max(longestRun, currentRun);
+  }
+  const events = desatEventList.length;
+
+  // Hourly breakdown — compact per-clock-hour stats, cheap to compute and
+  // store, and far more informative to the AI than a single session average.
+  const hourlyMap = {};
+  const hourlyOrder = [];
+  rows.forEach(function(r) {
+    const hourKey = r.t.toISOString().slice(0, 13); // e.g. "2026-07-20T23"
+    if (!hourlyMap[hourKey]) { hourlyMap[hourKey] = { spo2: [], pulse: [] }; hourlyOrder.push(hourKey); }
+    if (r.spo2 != null) hourlyMap[hourKey].spo2.push(r.spo2);
+    if (r.pulse != null) hourlyMap[hourKey].pulse.push(r.pulse);
+  });
+  const hourlyBreakdown = hourlyOrder.map(function(hourKey) {
+    const bucket = hourlyMap[hourKey];
+    return {
+      hour: hourKey + ':00:00.000Z',
+      avgSpo2: bucket.spo2.length ? Math.round(bucket.spo2.reduce((a,b)=>a+b,0)/bucket.spo2.length) : null,
+      minSpo2: bucket.spo2.length ? Math.min.apply(null, bucket.spo2) : null,
+      avgPulse: bucket.pulse.length ? Math.round(bucket.pulse.reduce((a,b)=>a+b,0)/bucket.pulse.length) : null,
+      minPulse: bucket.pulse.length ? Math.min.apply(null, bucket.pulse) : null,
+      maxPulse: bucket.pulse.length ? Math.max.apply(null, bucket.pulse) : null
+    };
+  });
 
   // Downsample into 60-second bins (min SpO2, avg pulse per bin) for storage/charting
   const series = [];
@@ -2396,14 +2451,27 @@ function computeO2Stats(rows, thresholdPct) {
     });
   }
 
+  // Find the first/last rows with an actual valid reading — trailing (and
+  // occasionally leading) rows are often "--" no-signal noise from putting on/
+  // taking off the sensor, and shouldn't be treated as the meaningful start/end
+  // of the session (this matters both for display and for matching this
+  // session to the right journal entry).
+  let firstValidIdx = 0;
+  while (firstValidIdx < rows.length - 1 && rows[firstValidIdx].spo2 == null) firstValidIdx++;
+  let lastValidIdx = rows.length - 1;
+  while (lastValidIdx > 0 && rows[lastValidIdx].spo2 == null) lastValidIdx--;
+
   return {
-    startTime: rows[0].t.toISOString(),
-    endTime: rows[rows.length-1].t.toISOString(),
+    startTime: rows[firstValidIdx].t.toISOString(),
+    endTime: rows[lastValidIdx].t.toISOString(),
+    rawEndTime: rows[rows.length-1].t.toISOString(), // includes trailing no-signal rows, for reference only
     durationSec: totalSec,
     avgSpo2, minSpo2, avgPulse, minPulse, maxPulse,
     pctUnder88: Math.round((underCount / totalSec) * 1000) / 10,
     desatEvents: events,
     longestDesatSec: longestRun,
+    desatEventList,
+    hourlyBreakdown,
     thresholdPct,
     motionSec, invalidSec, totalSec,
     series
@@ -2435,7 +2503,7 @@ function handleO2FileSelect(event) {
       if (!rows.length) throw new Error('No readable rows found in this CSV.');
       const stats = computeO2Stats(rows, 88);
       if (!stats) throw new Error('No valid SpO2 readings found in this file.');
-      pendingO2Session = { stats, fileName: file.name };
+      pendingO2Session = { stats, fileName: file.name, rawCsvText: e.target.result };
       renderO2Preview(stats);
     } catch (err) {
       alert('Could not read this CSV: ' + err.message);
@@ -2452,14 +2520,16 @@ function handleO2FileSelect(event) {
 }
 
 function renderO2Preview(stats) {
-  // Local calendar date from the session start (editable — sessions crossing
-  // midnight may need manual correction)
+  // Default to the calendar date of the session's END time — for overnight
+  // sessions, that's the "morning after" day, which is where sleep-related
+  // metrics (Sleep Score, CPAP, HRV) get logged. Editable if this guess is wrong.
   const startLocal = new Date(stats.startTime);
-  const dateStr = startLocal.getFullYear() + '-' + String(startLocal.getMonth()+1).padStart(2,'0') + '-' + String(startLocal.getDate()).padStart(2,'0');
+  const endLocal = new Date(stats.endTime);
+  const dateStr = endLocal.getFullYear() + '-' + String(endLocal.getMonth()+1).padStart(2,'0') + '-' + String(endLocal.getDate()).padStart(2,'0');
   document.getElementById('o2-session-date').value = dateStr;
 
   const startFmt = startLocal.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-  const endFmt = new Date(stats.endTime).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const endFmt = endLocal.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
   document.getElementById('o2-session-meta').textContent = startFmt + ' – ' + endFmt + ' · ' + formatDuration(stats.durationSec) + ' recorded';
 
   const grid = document.getElementById('o2-stat-grid');
@@ -2519,25 +2589,26 @@ function saveO2Session() {
   if (!dateStr) { alert('Please set a date for this session.'); return; }
 
   const stats = pendingO2Session.stats;
+  stats.rawSessionId = Date.now() + Math.floor(Math.random() * 1000); // reference for "Deep Dive" retrieval
   const btn = document.getElementById('o2-save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
   try {
     const entries = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
 
-    // Find entries saved on that calendar date (local time). If more than one
-    // exists for that day, prefer the "real" journal entry (has spoons/scale/
-    // mood/a real note) over a bare O2-only placeholder from an earlier upload.
-    const candidates = entries.filter(e => {
-      const d = new Date(e.date);
-      const eDateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      return eDateStr === dateStr;
+    // Match to whichever existing entry is CLOSEST in time to when this
+    // session ended — not just "same calendar date." This is what actually
+    // handles overnight sessions correctly: a session ending 7:47 AM should
+    // attach to a 7:18 AM entry even though the session started the night
+    // before on a different calendar date.
+    const sessionRefTime = new Date(stats.endTime).getTime();
+    const MAX_WINDOW_MS = 18 * 60 * 60 * 1000; // 18 hours
+    let match = null, closestDiff = Infinity;
+    entries.forEach(e => {
+      const diff = Math.abs(new Date(e.date).getTime() - sessionRefTime);
+      if (diff < closestDiff) { closestDiff = diff; match = e; }
     });
-    const isPlaceholder = e => e.spoons == null && e.es == null && !e.mood && (!e.note || e.note.indexOf('Imported from O2 monitor') === 0);
-    const match = candidates.find(e => !isPlaceholder(e)) || candidates[0];
-    if (candidates.length > 1) {
-      console.log(dateStr + ' has ' + candidates.length + ' entries — merging into the one with id ' + (match && match.id));
-    }
+    if (closestDiff > MAX_WINDOW_MS) match = null; // nothing close enough — create new instead
 
     let sessionCount, savedEntryId;
     if (match) {
@@ -2565,29 +2636,33 @@ function saveO2Session() {
     entries.sort((a, b) => new Date(b.date) - new Date(a.date));
     localStorage.setItem('lauriJournal', JSON.stringify(entries));
 
-    // Read back from localStorage to verify the write actually persisted —
-    // don't just trust that setItem succeeded silently.
-    const verify = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
-    const verifyEntry = verify.find(x => x.id === savedEntryId);
-    const verifyOk = !!(verifyEntry && verifyEntry.o2Sessions && verifyEntry.o2Sessions.length === sessionCount);
+    // Archive the full raw CSV to Supabase, permanently, for later "Deep Dive"
+    // analysis or export. Best-effort — if this fails, the session itself is
+    // still saved fine locally; you'd just lose the ability to deep-dive it.
+    if (pendingO2Session.rawCsvText) {
+      fetch(SUPABASE_URL + '/rest/v1/o2_raw_sessions', {
+        method: 'POST',
+        headers: supabaseHeaders(),
+        body: JSON.stringify([{
+          id: stats.rawSessionId,
+          entry_id: savedEntryId,
+          session_start: stats.startTime,
+          session_end: stats.endTime,
+          raw_csv: pendingO2Session.rawCsvText
+        }])
+      }).catch(err => console.error('Raw O2 archive upload failed (non-critical — session data itself is still saved):', err));
+    }
 
+    const matchedDate = match ? new Date(match.date).toLocaleString('en-US', { weekday:'long', month:'long', day:'numeric', hour:'numeric', minute:'2-digit' }) : null;
     const humanDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     btn.textContent = '✓ Saved!';
-    console.log('O2 session ' + (match ? 'merged into existing entry' : 'created new entry') + ' for ' + dateStr + ' (' + sessionCount + ' session(s) that day)');
     setTimeout(() => {
       pendingO2Session = null;
       document.getElementById('o2-preview').style.display = 'none';
       btn.disabled = false; btn.textContent = 'Save to Journal';
-      alert(
-        'DEBUG INFO:\n' +
-        'Date: ' + humanDate + ' (' + dateStr + ')\n' +
-        'Action: ' + (match ? 'updated existing entry' : 'created new entry') + '\n' +
-        'Entry ID: ' + savedEntryId + '\n' +
-        'Sessions on this entry: ' + sessionCount + '\n' +
-        'Total entries in journal now: ' + entries.length + '\n' +
-        'Verified in localStorage: ' + (verifyOk ? 'YES ✓' : 'NO ✗ — something is wrong') +
-        (candidates.length > 1 ? '\n\nNote: ' + candidates.length + ' entries exist for this date.' : '')
-      );
+      alert(match
+        ? 'Attached to your closest entry: ' + matchedDate + ' — now has ' + sessionCount + ' O2 session' + (sessionCount>1?'s':'') + '.'
+        : 'No nearby entry found — created a new entry for ' + humanDate + '.');
     }, 600);
 
     renderEntries();
@@ -2599,6 +2674,28 @@ function saveO2Session() {
     alert('Save error: ' + err.message);
     console.error('O2 session save error:', err);
     btn.disabled = false; btn.textContent = 'Save to Journal';
+  }
+}
+
+// Remove all O2 monitor sessions from an entry (e.g. to fix a misattached
+// session before re-uploading it to the correct entry)
+function clearO2Sessions(entryId) {
+  if (!confirm('Remove all O2 monitor data from this entry? You can re-upload the CSV(s) afterward if they belong elsewhere.')) return;
+  try {
+    const entries = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry) { alert('Entry not found.'); return; }
+    entry.o2Sessions = [];
+    delete entry.o2Session;
+    recomputeEntrySpo2FromSessions(entry);
+    localStorage.setItem('lauriJournal', JSON.stringify(entries));
+    renderEntries();
+    window.setTimeout(function() {
+      try { syncToCloud(); } catch(e) { console.error(e); }
+    }, 2000);
+  } catch (err) {
+    alert('Error clearing O2 data: ' + err.message);
+    console.error(err);
   }
 }
 
@@ -2617,7 +2714,88 @@ function recomputeEntrySpo2FromSessions(entry) {
   entry.spo2Low = String(overallMin);
 }
 
-// ── RENDER ENTRIES ───────────────────────────────────
+// Builds the expandable detail block for one O2 monitor session — full stats,
+// HR range, and every individual desaturation event (not just the count).
+function buildO2SessionDetailHtml(s, idx, entryId) {
+  const start = new Date(s.startTime).toLocaleString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  const end = new Date(s.endTime).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  const events = s.desatEventList || [];
+  const shownEvents = events.slice(0, 8);
+  const moreCount = events.length - shownEvents.length;
+  const eventsHtml = events.length
+    ? '<div style="margin-top:6px">' + shownEvents.map(ev => {
+        const es = new Date(ev.startTime).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+        const ee = new Date(ev.endTime).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+        return '<div style="font-size:0.76rem;color:var(--text-soft);padding:2px 0">• ' + es + '–' + ee + ' (' + formatEventDuration(ev.durationSec) + ', low ' + ev.lowSpo2 + '%)</div>';
+      }).join('') + (moreCount > 0 ? '<div style="font-size:0.76rem;color:var(--text-soft);padding:2px 0">…and ' + moreCount + ' more</div>' : '') + '</div>'
+    : '<div style="font-size:0.76rem;color:var(--text-soft)">No desaturation events ≥10s.</div>';
+
+  return '<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:10px">' +
+    '<div style="font-size:0.72rem;font-weight:700;color:var(--navy);margin-bottom:6px">Session ' + (idx+1) + ': ' + start + ' – ' + end + '</div>' +
+    '<div class="o2-stat-grid" style="margin:0 0 6px">' +
+      '<div class="o2-stat-chip"><div class="o2-stat-label">Avg / Low SpO₂</div><div class="o2-stat-value">' + s.avgSpo2 + '% / ' + s.minSpo2 + '%</div></div>' +
+      '<div class="o2-stat-chip"><div class="o2-stat-label">HR Range</div><div class="o2-stat-value">' + (s.minPulse!=null ? s.minPulse+'–'+s.maxPulse+' bpm' : '—') + '</div></div>' +
+      '<div class="o2-stat-chip"><div class="o2-stat-label">Time &lt;' + s.thresholdPct + '%</div><div class="o2-stat-value">' + s.pctUnder88 + '%</div></div>' +
+      '<div class="o2-stat-chip"><div class="o2-stat-label">Desat Events</div><div class="o2-stat-value">' + s.desatEvents + '</div></div>' +
+    '</div>' +
+    eventsHtml +
+    (s.rawSessionId ? '<button onclick="deepDiveO2Session(' + entryId + ',' + s.rawSessionId + ')" style="margin-top:8px;padding:6px 10px;font-size:0.74rem;border-radius:8px;border:1px solid var(--border);background:#fafafa;color:var(--text-soft);cursor:pointer">🔬 Deep Dive This Session</button>' : '') +
+  '</div>';
+}
+
+async function deepDiveO2Session(entryId, rawSessionId) {
+  const panel = document.getElementById('o2-deepdive-panel');
+  const textEl = document.getElementById('o2-deepdive-text');
+  panel.style.display = 'block';
+  textEl.textContent = '✨ Fetching archived session data…';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/o2_raw_sessions?id=eq.' + rawSessionId + '&select=raw_csv', {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+    });
+    if (!res.ok) throw new Error('Could not fetch archived session (HTTP ' + res.status + ')');
+    const rows = await res.json();
+    if (!rows.length || !rows[0].raw_csv) throw new Error('No archived raw data found for this session — it may predate the archive feature, or the upload failed at save time.');
+
+    const parsedRows = parseO2CSVText(rows[0].raw_csv);
+    if (!parsedRows.length) throw new Error('Archived data could not be parsed.');
+
+    // Downsample to 5-second bins — denser than the routine 60s series, but
+    // still bounded so a single overnight session reliably fits in one
+    // request instead of risking the same context/timeout limits raw
+    // per-second data would hit.
+    const denseSeries = [];
+    for (let i = 0; i < parsedRows.length; i += 5) {
+      const bin = parsedRows.slice(i, i + 5);
+      const binSpo2 = bin.filter(r => r.spo2 != null).map(r => r.spo2);
+      const binPulse = bin.filter(r => r.pulse != null).map(r => r.pulse);
+      denseSeries.push({
+        t: bin[0].t.toISOString(),
+        spo2: binSpo2.length ? Math.min.apply(null, binSpo2) : null,
+        pulse: binPulse.length ? Math.round(binPulse.reduce((a,b)=>a+b,0)/binPulse.length) : null
+      });
+    }
+
+    textEl.textContent = '✨ Analyzing ' + denseSeries.length + ' data points (5-second resolution)…';
+
+    const apiRes = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'deepdive', denseSeries })
+    });
+    const data = await apiRes.json();
+    if (data.analysis) {
+      textEl.textContent = data.analysis;
+    } else throw new Error(data.error || 'No response');
+
+  } catch (err) {
+    textEl.textContent = 'Deep dive failed: ' + err.message;
+    console.error('Deep dive error:', err);
+  }
+}
+
+
 function getEntries() { try { return JSON.parse(localStorage.getItem('lauriJournal')||'[]'); } catch { return []; } }
 
 function renderEntries() {
@@ -2651,9 +2829,12 @@ function renderEntries() {
       if (e.steps) vitals.push(`<span class="vital-tag">👟 ${e.steps} steps</span>`);
       if (e.protein75) vitals.push(`<span class="vital-tag">🍗 ${e.protein75==='yes'?'75g+ protein':'<75g protein'}</span>`);
       const o2Sessions = e.o2Sessions || (e.o2Session ? [e.o2Session] : []);
+      let o2DetailsBlock = '';
       if (o2Sessions.length) {
         const totalDesat = o2Sessions.reduce((a,s)=>a+(s.desatEvents||0),0);
-        vitals.push(`<span class="vital-tag">📈 O2 monitor (${o2Sessions.length} session${o2Sessions.length>1?'s':''}): ${totalDesat} desats</span>`);
+        const o2DetailsId = 'o2-detail-' + e.id;
+        vitals.push(`<span class="vital-tag">📈 O2 monitor (${o2Sessions.length} session${o2Sessions.length>1?'s':''}): ${totalDesat} desats <a href="#" onclick="event.preventDefault();const el=document.getElementById('${o2DetailsId}');el.style.display=el.style.display==='none'?'block':'none';" style="margin-left:6px;color:var(--teal);text-decoration:underline">details</a> <a href="#" onclick="event.preventDefault();clearO2Sessions(${e.id});" style="margin-left:6px;color:var(--text-soft);text-decoration:underline">clear</a></span>`);
+        o2DetailsBlock = `<div id="${o2DetailsId}" style="display:none">` + o2Sessions.map((s,idx) => buildO2SessionDetailHtml(s, idx, e.id)).join('') + '</div>';
       }
       const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
       const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
@@ -2672,6 +2853,7 @@ function renderEntries() {
         ${e.sleepQuality?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.sleepQuality.emoji||''} Sleep: ${e.sleepQuality.label||''}</div>`:''}
         ${e.dayRating?`<div style="font-size:0.82rem;color:var(--text-soft);margin-bottom:4px">${e.dayRating.emoji||''} Day: ${e.dayRating.label||''}</div>`:''}
         ${vitals.length?`<div class="entry-vitals">${vitals.join('')}</div>`:''}
+        ${o2DetailsBlock}
         ${symChips||medChips||therChips||facChips||actChips?`<div class="entry-chips-row">${medChips}${symChips}${therChips}${facChips}${actChips}</div>`:''}
         ${e.note?`<div class="entry-note">${e.note}</div>`:''}
         ${imgs?`<div class="entry-images">${imgs}</div>`:''}
