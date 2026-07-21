@@ -281,6 +281,22 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
 .img-upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa; }
 .img-upload-area:hover { border-color: var(--teal); background: var(--teal-light); }
 .img-upload-area p { font-size: 0.8rem; color: var(--text-soft); margin-top: 4px; }
+
+/* O2 monitor upload */
+.o2-upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 20px 16px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa; }
+.o2-upload-area:hover { border-color: var(--terracotta); background: #fdf1ee; }
+.o2-upload-area .o2-upload-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.o2-upload-area p { font-size: 0.8rem; color: var(--text-soft); margin-top: 4px; }
+.o2-preview { margin-top: 14px; }
+.o2-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.o2-stat-chip { background: #fafafa; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.o2-stat-chip .o2-stat-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-soft); }
+.o2-stat-chip .o2-stat-value { font-size: 1.02rem; font-weight: 700; color: var(--navy); margin-top: 2px; }
+.o2-stat-chip.o2-warn { background: var(--red-light); border-color: var(--red); }
+.o2-stat-chip.o2-warn .o2-stat-value { color: #8a2f2f; }
+.o2-actions { display: flex; gap: 8px; margin-top: 12px; }
+.o2-save-btn { flex: 1; padding: 11px; border-radius: 12px; border: none; background: var(--navy); color: var(--gold-light); font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+.o2-discard-btn { padding: 11px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: white; color: var(--text-soft); font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
 #img-input { display: none; }
 .img-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .img-preview-wrap { position: relative; width: 68px; height: 68px; }
@@ -1011,6 +1027,37 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
       <div class="chip chip-factor" onclick="toggleChip(this)">Woke Early</div>
       <div class="chip chip-factor" onclick="toggleChip(this)">Woke Tired</div>
       <div class="chip chip-factor" onclick="toggleChip(this)">Yard Work</div>
+    </div>
+  </div>
+
+  <!-- 10b. Overnight O2 Monitor Upload -->
+  <div class="jblock">
+    <div class="jblock-header"><div class="jblock-icon icon-teal">🫁</div><div class="jblock-title">Overnight O2 Monitor</div></div>
+    <div class="jblock-subtitle">Upload a CSV from your pulse oximeter — auto-fills SpO₂ and shows the full session trend.</div>
+
+    <div id="o2-upload-zone" class="o2-upload-area" onclick="document.getElementById('o2-file-input').click()">
+      <div class="o2-upload-icon">📈</div>
+      <p><strong>Tap to choose a CSV file</strong><br>Time, Oxygen Level, Pulse Rate columns</p>
+    </div>
+    <input type="file" id="o2-file-input" accept=".csv,text/csv" style="display:none" onchange="handleO2FileSelect(event)">
+
+    <div id="o2-parsing-msg" style="display:none;text-align:center;padding:14px;color:var(--text-soft);font-size:0.85rem">✨ Parsing CSV…</div>
+
+    <div id="o2-preview" class="o2-preview" style="display:none">
+      <div class="body-field" style="margin-bottom:10px">
+        <div class="body-label">Session Date (edit if it crossed midnight)</div>
+        <input class="body-input" type="date" id="o2-session-date">
+      </div>
+      <div id="o2-session-meta" style="font-size:0.78rem;color:var(--text-soft);margin-bottom:4px"></div>
+      <div class="o2-stat-grid" id="o2-stat-grid"></div>
+      <div class="chart-block">
+        <div class="chart-title">📉 Overnight SpO₂ &amp; Pulse Trend</div>
+        <div class="chart-svg-wrap" id="o2-chart-wrap"></div>
+      </div>
+      <div class="o2-actions">
+        <button class="o2-save-btn" id="o2-save-btn" onclick="saveO2Session()">Save to Journal</button>
+        <button class="o2-discard-btn" onclick="discardO2Session()">Discard</button>
+      </div>
     </div>
   </div>
 
@@ -2246,6 +2293,7 @@ function saveEntry() {
     // Reset form and show entries
     resetForm();
     renderEntries();
+    getDailyInsight(entry);
 
     // Sync to Supabase in background
     window.setTimeout(function() {
@@ -2276,6 +2324,261 @@ function resetForm() {
     const prev = document.getElementById('img-previews'); if(prev) prev.innerHTML='';
     const esLbl = document.getElementById('es-label'); if(esLbl) esLbl.textContent='';
   } catch(e) { console.error('Reset error:', e); }
+}
+
+// ── OVERNIGHT O2 MONITOR CSV UPLOAD ──────────────────
+
+let pendingO2Session = null; // { stats, fileName }
+
+function parseO2Timestamp(str) {
+  // Expected format: "05:20:07 Jul 09 2026"
+  str = str.trim();
+  const idx = str.indexOf(' ');
+  if (idx === -1) return null;
+  const timePart = str.slice(0, idx);
+  const datePart = str.slice(idx + 1);
+  const d = new Date(datePart + ' ' + timePart);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseO2CSVText(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+  if (lines.length < 2) return [];
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',');
+    if (cols.length < 3) continue;
+    const t = parseO2Timestamp(cols[0]);
+    if (!t) continue;
+    const spo2Raw = cols[1].trim();
+    const pulseRaw = cols[2].trim();
+    const motion = cols[3] != null ? (parseInt(cols[3]) || 0) : 0;
+    rows.push({
+      t,
+      spo2: (spo2Raw === '--' || spo2Raw === '') ? null : parseInt(spo2Raw),
+      pulse: (pulseRaw === '--' || pulseRaw === '') ? null : parseInt(pulseRaw),
+      motion
+    });
+  }
+  return rows;
+}
+
+function computeO2Stats(rows, thresholdPct) {
+  thresholdPct = thresholdPct || 88;
+  if (!rows.length) return null;
+  const spo2Vals = rows.filter(r => r.spo2 != null).map(r => r.spo2);
+  const pulseVals = rows.filter(r => r.pulse != null).map(r => r.pulse);
+  if (!spo2Vals.length) return null;
+
+  const avgSpo2 = Math.round(spo2Vals.reduce((a,b)=>a+b,0) / spo2Vals.length);
+  const minSpo2 = Math.min.apply(null, spo2Vals);
+  const avgPulse = pulseVals.length ? Math.round(pulseVals.reduce((a,b)=>a+b,0) / pulseVals.length) : null;
+  const minPulse = pulseVals.length ? Math.min.apply(null, pulseVals) : null;
+  const maxPulse = pulseVals.length ? Math.max.apply(null, pulseVals) : null;
+
+  const totalSec = rows.length;
+  const motionSec = rows.filter(r => r.motion > 0).length;
+  const invalidSec = rows.length - spo2Vals.length;
+
+  // Desaturation "events": contiguous stretches under threshold lasting >=10s.
+  // This is a simple descriptive threshold metric, not a validated clinical ODI.
+  const MIN_EVENT_SEC = 10;
+  let underCount = 0, events = 0, longestRun = 0, currentRun = 0;
+  rows.forEach(r => {
+    if (r.spo2 != null && r.spo2 < thresholdPct) {
+      currentRun++; underCount++;
+    } else {
+      if (currentRun >= MIN_EVENT_SEC) { events++; longestRun = Math.max(longestRun, currentRun); }
+      currentRun = 0;
+    }
+  });
+  if (currentRun >= MIN_EVENT_SEC) { events++; longestRun = Math.max(longestRun, currentRun); }
+
+  // Downsample into 60-second bins (min SpO2, avg pulse per bin) for storage/charting
+  const series = [];
+  for (let i = 0; i < rows.length; i += 60) {
+    const bin = rows.slice(i, i + 60);
+    const binSpo2 = bin.filter(r => r.spo2 != null).map(r => r.spo2);
+    const binPulse = bin.filter(r => r.pulse != null).map(r => r.pulse);
+    series.push({
+      t: bin[0].t.toISOString(),
+      spo2: binSpo2.length ? Math.min.apply(null, binSpo2) : null,
+      pulse: binPulse.length ? Math.round(binPulse.reduce((a,b)=>a+b,0)/binPulse.length) : null
+    });
+  }
+
+  return {
+    startTime: rows[0].t.toISOString(),
+    endTime: rows[rows.length-1].t.toISOString(),
+    durationSec: totalSec,
+    avgSpo2, minSpo2, avgPulse, minPulse, maxPulse,
+    pctUnder88: Math.round((underCount / totalSec) * 1000) / 10,
+    desatEvents: events,
+    longestDesatSec: longestRun,
+    thresholdPct,
+    motionSec, invalidSec, totalSec,
+    series
+  };
+}
+
+function formatDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.round((sec % 3600) / 60);
+  return h > 0 ? (h + 'h ' + m + 'm') : (m + 'm');
+}
+
+function formatEventDuration(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? (m + 'm ' + s + 's') : (s + 's');
+}
+
+function handleO2FileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('o2-parsing-msg').style.display = 'block';
+  document.getElementById('o2-preview').style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const rows = parseO2CSVText(e.target.result);
+      if (!rows.length) throw new Error('No readable rows found in this CSV.');
+      const stats = computeO2Stats(rows, 88);
+      if (!stats) throw new Error('No valid SpO2 readings found in this file.');
+      pendingO2Session = { stats, fileName: file.name };
+      renderO2Preview(stats);
+    } catch (err) {
+      alert('Could not read this CSV: ' + err.message);
+      console.error('O2 CSV parse error:', err);
+    }
+    document.getElementById('o2-parsing-msg').style.display = 'none';
+    document.getElementById('o2-file-input').value = '';
+  };
+  reader.onerror = function() {
+    alert('Could not read the file.');
+    document.getElementById('o2-parsing-msg').style.display = 'none';
+  };
+  reader.readAsText(file);
+}
+
+function renderO2Preview(stats) {
+  // Local calendar date from the session start (editable — sessions crossing
+  // midnight may need manual correction)
+  const startLocal = new Date(stats.startTime);
+  const dateStr = startLocal.getFullYear() + '-' + String(startLocal.getMonth()+1).padStart(2,'0') + '-' + String(startLocal.getDate()).padStart(2,'0');
+  document.getElementById('o2-session-date').value = dateStr;
+
+  const startFmt = startLocal.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const endFmt = new Date(stats.endTime).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  document.getElementById('o2-session-meta').textContent = startFmt + ' – ' + endFmt + ' · ' + formatDuration(stats.durationSec) + ' recorded';
+
+  const grid = document.getElementById('o2-stat-grid');
+  grid.innerHTML = '';
+  const stats_list = [
+    { label: 'Avg SpO₂', value: stats.avgSpo2 + '%', warn: false },
+    { label: 'Low SpO₂', value: stats.minSpo2 + '%', warn: stats.minSpo2 < 88 },
+    { label: 'Avg Pulse', value: stats.avgPulse != null ? stats.avgPulse + ' bpm' : '—', warn: false },
+    { label: 'Pulse Range', value: (stats.minPulse!=null && stats.maxPulse!=null) ? (stats.minPulse+'–'+stats.maxPulse+' bpm') : '—', warn: false },
+    { label: 'Time <88%', value: stats.pctUnder88 + '%', warn: stats.pctUnder88 > 5 },
+    { label: 'Desat Events', value: stats.desatEvents, warn: stats.desatEvents > 5 },
+    { label: 'Longest Event', value: stats.desatEvents ? formatEventDuration(stats.longestDesatSec) : '—', warn: stats.longestDesatSec > 60 },
+    { label: 'Motion/Signal Loss', value: formatDuration(stats.motionSec + stats.invalidSec), warn: false }
+  ];
+  stats_list.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'o2-stat-chip' + (s.warn ? ' o2-warn' : '');
+    const lbl = document.createElement('div');
+    lbl.className = 'o2-stat-label';
+    lbl.textContent = s.label;
+    const val = document.createElement('div');
+    val.className = 'o2-stat-value';
+    val.textContent = s.value;
+    chip.appendChild(lbl);
+    chip.appendChild(val);
+    grid.appendChild(chip);
+  });
+
+  // Chart: downsample further for legible SVG (cap ~120 points)
+  const series = stats.series;
+  const step = Math.max(1, Math.ceil(series.length / 120));
+  const chartLabels = [], spo2Vals = [], pulseVals = [];
+  for (let i = 0; i < series.length; i += step) {
+    const pt = series[i];
+    chartLabels.push(new Date(pt.t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+    spo2Vals.push(pt.spo2);
+    pulseVals.push(pt.pulse != null ? pt.pulse / 2 : null); // scale pulse to sit near SpO2 range visually
+  }
+  const chartSvg = buildLineChartSVG(chartLabels, [
+    { values: spo2Vals, color: CHART_COLORS.terracotta, name: 'SpO2' },
+    { values: pulseVals, color: CHART_COLORS.lavender, name: 'Pulse÷2' }
+  ], { threshold: 88, thresholdColor: CHART_COLORS.red, thresholdLabel: '88% threshold', yMin: 60, yMax: 100 });
+  document.getElementById('o2-chart-wrap').innerHTML = chartSvg;
+
+  document.getElementById('o2-preview').style.display = 'block';
+  document.getElementById('o2-preview').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function discardO2Session() {
+  pendingO2Session = null;
+  document.getElementById('o2-preview').style.display = 'none';
+}
+
+function saveO2Session() {
+  if (!pendingO2Session) return;
+  const dateStr = document.getElementById('o2-session-date').value;
+  if (!dateStr) { alert('Please set a date for this session.'); return; }
+
+  const stats = pendingO2Session.stats;
+  const btn = document.getElementById('o2-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  try {
+    const entries = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
+
+    // Find an existing entry saved on that calendar date (local time)
+    const match = entries.find(e => {
+      const d = new Date(e.date);
+      const eDateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      return eDateStr === dateStr;
+    });
+
+    if (match) {
+      match.spo2Avg = String(stats.avgSpo2);
+      match.spo2Low = String(stats.minSpo2);
+      match.o2Session = stats;
+    } else {
+      entries.unshift({
+        id: Date.now(),
+        date: new Date(dateStr + 'T12:00:00').toISOString(),
+        spo2Avg: String(stats.avgSpo2),
+        spo2Low: String(stats.minSpo2),
+        o2Session: stats,
+        note: 'Imported from overnight O2 monitor.',
+        meds: [], symptoms: [], therapy: [], factors: [], activity: [], images: []
+      });
+    }
+
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    localStorage.setItem('lauriJournal', JSON.stringify(entries));
+
+    btn.textContent = '✓ Saved!';
+    setTimeout(() => {
+      pendingO2Session = null;
+      document.getElementById('o2-preview').style.display = 'none';
+      btn.disabled = false; btn.textContent = 'Save to Journal';
+    }, 1200);
+
+    renderEntries();
+    window.setTimeout(function() {
+      try { syncToCloud(); } catch(e) { console.error(e); }
+    }, 2000);
+
+  } catch (err) {
+    alert('Save error: ' + err.message);
+    console.error('O2 session save error:', err);
+    btn.disabled = false; btn.textContent = 'Save to Journal';
+  }
 }
 
 // ── RENDER ENTRIES ───────────────────────────────────
@@ -2311,6 +2614,7 @@ function renderEntries() {
       if (e.calories) vitals.push(`<span class="vital-tag">🍽️ ${e.calories} cal</span>`);
       if (e.steps) vitals.push(`<span class="vital-tag">👟 ${e.steps} steps</span>`);
       if (e.protein75) vitals.push(`<span class="vital-tag">🍗 ${e.protein75==='yes'?'75g+ protein':'<75g protein'}</span>`);
+      if (e.o2Session) vitals.push(`<span class="vital-tag">📈 O2 monitor: ${e.o2Session.desatEvents} desats, ${e.o2Session.pctUnder88}% &lt;88%</span>`);
       const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
       const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
       const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
@@ -2706,6 +3010,7 @@ async function syncToCloud() {
       calories: e.calories ? parseInt(e.calories) : null,
       steps: e.steps ? parseInt(e.steps) : null,
       protein_75: e.protein75 || null,
+      o2_session: e.o2Session || null,
       meds: e.meds || [],
       symptoms: e.symptoms || [],
       therapy: e.therapy || [],
@@ -2777,6 +3082,7 @@ async function syncFromCloud() {
           calories: ce.calories,
           steps: ce.steps,
           protein75: ce.protein_75,
+          o2Session: ce.o2_session,
           meds: ce.meds || [],
           symptoms: ce.symptoms || [],
           therapy: ce.therapy || [],
@@ -3111,6 +3417,10 @@ function renderWeeklyCharts(chartData, stats) {
     { title: '👟 Steps', svg: buildBarChartSVG(chartData.dates, chartData.steps, { color: CHART_COLORS.sage }) },
     { title: '💧 Water Intake (oz)', svg: buildBarChartSVG(chartData.dates, chartData.waterOz, { color: CHART_COLORS.teal }) }
   ];
+
+  if (chartData.desatEvents && chartData.desatEvents.some(v => v != null)) {
+    blocks.push({ title: '🌙 Overnight Desaturation Events', svg: buildBarChartSVG(chartData.dates, chartData.desatEvents, { color: CHART_COLORS.terracotta }) });
+  }
 
   if (stats && stats.topSymptoms && stats.topSymptoms.length) {
     blocks.push({ title: '📋 Most Frequent Symptoms', svg: buildHBarChartSVG(stats.topSymptoms) });
