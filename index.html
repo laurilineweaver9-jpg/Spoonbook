@@ -871,16 +871,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
 
     <!-- Oxygen -->
     <div class="body-group-label" style="margin-top:14px">🫁 Oxygen</div>
-    <div class="body-grid">
-      <div class="body-field">
-        <div class="body-label">SpO₂ Avg (%)</div>
-        <input class="body-input" type="number" id="spo2-avg" placeholder="e.g. 94" min="50" max="100">
-      </div>
-      <div class="body-field">
-        <div class="body-label">Lowest SpO₂ (%)</div>
-        <input class="body-input" type="number" id="spo2-low" placeholder="e.g. 88" min="50" max="100">
-      </div>
-    </div>
+    <div class="jblock-subtitle" style="padding-left:0;margin-bottom:0">SpO₂ is now auto-filled from the O2 Monitor upload below — no manual entry needed here.</div>
 
     <!-- Heart -->
     <div class="body-group-label" style="margin-top:14px">❤️ Heart</div>
@@ -1030,10 +1021,10 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
     </div>
   </div>
 
-  <!-- 10b. Overnight O2 Monitor Upload -->
+  <!-- 10b. O2 Monitor Upload -->
   <div class="jblock">
-    <div class="jblock-header"><div class="jblock-icon icon-teal">🫁</div><div class="jblock-title">Overnight O2 Monitor</div></div>
-    <div class="jblock-subtitle">Upload a CSV from your pulse oximeter — auto-fills SpO₂ and shows the full session trend.</div>
+    <div class="jblock-header"><div class="jblock-icon icon-teal">🫁</div><div class="jblock-title">O2 Monitor</div></div>
+    <div class="jblock-subtitle">Upload a CSV from your pulse oximeter — any time of day. Auto-fills SpO₂ and adds this session's trend to your analysis. Upload as many sessions as you like for the same day (overnight, naps, daytime activity).</div>
 
     <div id="o2-upload-zone" class="o2-upload-area" onclick="document.getElementById('o2-file-input').click()">
       <div class="o2-upload-icon">📈</div>
@@ -1051,7 +1042,7 @@ body { font-family: 'DM Sans', sans-serif; background: #f5f3f0; color: var(--tex
       <div id="o2-session-meta" style="font-size:0.78rem;color:var(--text-soft);margin-bottom:4px"></div>
       <div class="o2-stat-grid" id="o2-stat-grid"></div>
       <div class="chart-block">
-        <div class="chart-title">📉 Overnight SpO₂ &amp; Pulse Trend</div>
+        <div class="chart-title">📉 SpO₂ &amp; Pulse Trend — This Session</div>
         <div class="chart-svg-wrap" id="o2-chart-wrap"></div>
       </div>
       <div class="o2-actions">
@@ -2239,8 +2230,6 @@ function saveEntry() {
       bpDia: document.getElementById('bp-dia').value || null,
       weight: document.getElementById('weight').value || null,
       hrv: document.getElementById('hrv').value || null,
-      spo2Avg: document.getElementById('spo2-avg').value || null,
-      spo2Low: document.getElementById('spo2-low').value || null,
       sleepScore: document.getElementById('sleep-score').value || null,
       cpapScore: document.getElementById('cpap-score').value || null,
       cpapHours: document.getElementById('cpap-hours').value || null,
@@ -2319,7 +2308,7 @@ function resetForm() {
     document.querySelectorAll('.day-rating-face').forEach(f => f.classList.remove('selected'));
     document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-    ['sleep-hours','weight','hrv','spo2-avg','spo2-low','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours','caffeine-cups','water-oz','alcohol-drinks','calories','steps'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['sleep-hours','weight','hrv','bp-sys','bp-dia','sleep-score','cpap-score','cpap-hours','caffeine-cups','water-oz','alcohol-drinks','calories','steps'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     const note = document.getElementById('journal-note'); if(note) note.value='';
     const prev = document.getElementById('img-previews'); if(prev) prev.innerHTML='';
     const esLbl = document.getElementById('es-label'); if(esLbl) esLbl.textContent='';
@@ -2536,27 +2525,39 @@ function saveO2Session() {
   try {
     const entries = JSON.parse(localStorage.getItem('lauriJournal') || '[]');
 
-    // Find an existing entry saved on that calendar date (local time)
-    const match = entries.find(e => {
+    // Find entries saved on that calendar date (local time). If more than one
+    // exists for that day, prefer the "real" journal entry (has spoons/scale/
+    // mood/a real note) over a bare O2-only placeholder from an earlier upload.
+    const candidates = entries.filter(e => {
       const d = new Date(e.date);
       const eDateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
       return eDateStr === dateStr;
     });
+    const isPlaceholder = e => e.spoons == null && e.es == null && !e.mood && (!e.note || e.note.indexOf('Imported from O2 monitor') === 0);
+    const match = candidates.find(e => !isPlaceholder(e)) || candidates[0];
+    if (candidates.length > 1) {
+      console.log(dateStr + ' has ' + candidates.length + ' entries — merging into the one with id ' + (match && match.id));
+    }
 
+    let sessionCount;
     if (match) {
-      match.spo2Avg = String(stats.avgSpo2);
-      match.spo2Low = String(stats.minSpo2);
-      match.o2Session = stats;
+      // Migrate any legacy single-session field, then append this session
+      if (!Array.isArray(match.o2Sessions)) match.o2Sessions = match.o2Session ? [match.o2Session] : [];
+      delete match.o2Session;
+      match.o2Sessions.push(stats);
+      recomputeEntrySpo2FromSessions(match);
+      sessionCount = match.o2Sessions.length;
     } else {
-      entries.unshift({
+      const newEntry = {
         id: Date.now(),
         date: new Date(dateStr + 'T12:00:00').toISOString(),
-        spo2Avg: String(stats.avgSpo2),
-        spo2Low: String(stats.minSpo2),
-        o2Session: stats,
-        note: 'Imported from overnight O2 monitor.',
+        o2Sessions: [stats],
+        note: 'Imported from O2 monitor.',
         meds: [], symptoms: [], therapy: [], factors: [], activity: [], images: []
-      });
+      };
+      recomputeEntrySpo2FromSessions(newEntry);
+      entries.unshift(newEntry);
+      sessionCount = 1;
     }
 
     entries.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -2564,12 +2565,13 @@ function saveO2Session() {
 
     const humanDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     btn.textContent = '✓ Saved!';
-    console.log('O2 session ' + (match ? 'merged into existing entry' : 'created new entry') + ' for ' + dateStr);
+    console.log('O2 session ' + (match ? 'merged into existing entry' : 'created new entry') + ' for ' + dateStr + ' (' + sessionCount + ' session(s) that day)');
     setTimeout(() => {
       pendingO2Session = null;
       document.getElementById('o2-preview').style.display = 'none';
       btn.disabled = false; btn.textContent = 'Save to Journal';
-      alert((match ? 'Updated your existing entry for ' : 'Created a new entry for ') + humanDate + '.');
+      alert((match ? 'Updated your entry for ' : 'Created a new entry for ') + humanDate + ' — now has ' + sessionCount + ' O2 session' + (sessionCount>1?'s':'') + '.' +
+        (candidates.length > 1 ? '\n\nNote: there are ' + candidates.length + ' entries for this date — make sure you\'re looking at the right one, or delete any stray duplicates.' : ''));
     }, 600);
 
     renderEntries();
@@ -2582,6 +2584,21 @@ function saveO2Session() {
     console.error('O2 session save error:', err);
     btn.disabled = false; btn.textContent = 'Save to Journal';
   }
+}
+
+// Recompute an entry's summary SpO2 avg/low across ALL its O2 monitor sessions
+// (weighted average by session duration; overall min across sessions)
+function recomputeEntrySpo2FromSessions(entry) {
+  const sessions = entry.o2Sessions || [];
+  if (!sessions.length) { entry.spo2Avg = null; entry.spo2Low = null; return; }
+  let weightedSum = 0, totalDuration = 0, overallMin = Infinity;
+  sessions.forEach(s => {
+    weightedSum += s.avgSpo2 * s.durationSec;
+    totalDuration += s.durationSec;
+    overallMin = Math.min(overallMin, s.minSpo2);
+  });
+  entry.spo2Avg = totalDuration ? String(Math.round(weightedSum / totalDuration)) : null;
+  entry.spo2Low = String(overallMin);
 }
 
 // ── RENDER ENTRIES ───────────────────────────────────
@@ -2617,7 +2634,11 @@ function renderEntries() {
       if (e.calories) vitals.push(`<span class="vital-tag">🍽️ ${e.calories} cal</span>`);
       if (e.steps) vitals.push(`<span class="vital-tag">👟 ${e.steps} steps</span>`);
       if (e.protein75) vitals.push(`<span class="vital-tag">🍗 ${e.protein75==='yes'?'75g+ protein':'<75g protein'}</span>`);
-      if (e.o2Session) vitals.push(`<span class="vital-tag">📈 O2 monitor: ${e.o2Session.desatEvents} desats, ${e.o2Session.pctUnder88}% &lt;88%</span>`);
+      const o2Sessions = e.o2Sessions || (e.o2Session ? [e.o2Session] : []);
+      if (o2Sessions.length) {
+        const totalDesat = o2Sessions.reduce((a,s)=>a+(s.desatEvents||0),0);
+        vitals.push(`<span class="vital-tag">📈 O2 monitor (${o2Sessions.length} session${o2Sessions.length>1?'s':''}): ${totalDesat} desats</span>`);
+      }
       const symChips = (e.symptoms||[]).map(s=>`<span class="entry-chip ec-symptom">${s}</span>`).join('');
       const medChips = (e.meds||[]).map(s=>`<span class="entry-chip ec-med">${s}</span>`).join('');
       const therChips = (e.therapy||[]).map(s=>`<span class="entry-chip ec-therapy">${s}</span>`).join('');
@@ -3013,7 +3034,7 @@ async function syncToCloud() {
       calories: e.calories ? parseInt(e.calories) : null,
       steps: e.steps ? parseInt(e.steps) : null,
       protein_75: e.protein75 || null,
-      o2_session: e.o2Session || null,
+      o2_sessions: e.o2Sessions || null,
       meds: e.meds || [],
       symptoms: e.symptoms || [],
       therapy: e.therapy || [],
@@ -3085,7 +3106,7 @@ async function syncFromCloud() {
           calories: ce.calories,
           steps: ce.steps,
           protein75: ce.protein_75,
-          o2Session: ce.o2_session,
+          o2Sessions: ce.o2_sessions,
           meds: ce.meds || [],
           symptoms: ce.symptoms || [],
           therapy: ce.therapy || [],
@@ -3422,7 +3443,7 @@ function renderWeeklyCharts(chartData, stats) {
   ];
 
   if (chartData.desatEvents && chartData.desatEvents.some(v => v != null)) {
-    blocks.push({ title: '🌙 Overnight Desaturation Events', svg: buildBarChartSVG(chartData.dates, chartData.desatEvents, { color: CHART_COLORS.terracotta }) });
+    blocks.push({ title: '📉 Desaturation Events (all sessions/day)', svg: buildBarChartSVG(chartData.dates, chartData.desatEvents, { color: CHART_COLORS.terracotta }) });
   }
 
   if (stats && stats.topSymptoms && stats.topSymptoms.length) {
