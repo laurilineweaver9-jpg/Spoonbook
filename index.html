@@ -2258,10 +2258,13 @@ function saveEntry() {
       images: pendingImages.map(img => ({ name: img.name }))
     };
 
-    // Save photos to gallery IndexedDB if any
+    // Save photos to gallery IndexedDB if any, and archive to Supabase so
+    // they survive a cache clear or a different device (IndexedDB alone
+    // does not sync anywhere).
     if (pendingImages.length > 0) {
       const entryDate = new Date(entry.date).toISOString().split('T')[0];
-      pendingImages.forEach(img => {
+      pendingImages.forEach((img, i) => {
+        const jid = `${entry.id}-${i}`;
         savePhotoToDB({
           id: Date.now() + Math.random(),
           date: entryDate,
@@ -2270,9 +2273,25 @@ function saveEntry() {
           dataUrl: img.dataUrl,
           name: img.name,
           source: 'journal',
-          journalId: String(entry.id),
+          journalId: jid,
           addedAt: new Date().toISOString()
         }).catch(e => console.error('Photo save error:', e));
+
+        fetch(SUPABASE_URL + '/rest/v1/journal_photos', {
+          method: 'POST',
+          headers: supabaseHeaders(),
+          body: JSON.stringify([{
+            id: jid,
+            journal_id: entry.id,
+            photo_index: i,
+            date: entryDate,
+            category: 'General',
+            caption: entry.note ? entry.note.substring(0, 80) : 'From journal entry',
+            data_url: img.dataUrl,
+            name: img.name,
+            source: 'journal'
+          }])
+        }).catch(err => console.error('Photo cloud archive failed (non-critical — photo is still saved locally):', err));
       });
     }
 
@@ -3017,6 +3036,7 @@ async function saveGalleryPhotos() {
 
   try {
     for (const img of galleryPending) {
+      const photoId = 'manual-' + Date.now() + '-' + Math.floor(Math.random()*100000);
       await savePhotoToDB({
         id: Date.now() + Math.random(),
         date,
@@ -3025,8 +3045,24 @@ async function saveGalleryPhotos() {
         dataUrl: img.dataUrl,
         name: img.name,
         source: 'manual',
+        journalId: photoId,
         addedAt: new Date().toISOString()
       });
+      fetch(SUPABASE_URL + '/rest/v1/journal_photos', {
+        method: 'POST',
+        headers: supabaseHeaders(),
+        body: JSON.stringify([{
+          id: photoId,
+          journal_id: null,
+          photo_index: null,
+          date,
+          category,
+          caption,
+          data_url: img.dataUrl,
+          name: img.name,
+          source: 'manual'
+        }])
+      }).catch(err => console.error('Photo cloud archive failed (non-critical):', err));
     }
     galleryPending = [];
     document.getElementById('gallery-pending-previews').innerHTML = '';
@@ -3051,20 +3087,24 @@ async function syncJournalPhotos() {
     const entryDate = new Date(entry.date).toISOString().split('T')[0];
     for (let i = 0; i < entry.images.length; i++) {
       const jid = `${entry.id}-${i}`;
-      if (!existingJIds.has(jid)) {
-        await savePhotoToDB({
-          id: Date.now() + Math.random(),
-          date: entryDate,
-          category: 'General',
-          caption: entry.note ? entry.note.substring(0, 80) : 'From journal entry',
-          dataUrl: entry.images[i].dataUrl,
-          name: entry.images[i].name || 'journal-photo.jpg',
-          source: 'journal',
-          journalId: jid,
-          addedAt: new Date().toISOString()
-        });
-        existingJIds.add(jid);
-      }
+      if (existingJIds.has(jid)) continue;
+      // Journal entries only ever store {name}, never the actual image data
+      // (that's deliberate — keeps localStorage small). So there's nothing
+      // to backfill from here; any recovery has to come from the cloud
+      // photo archive instead, via syncPhotosFromCloud().
+      if (!entry.images[i].dataUrl) continue;
+      await savePhotoToDB({
+        id: Date.now() + Math.random(),
+        date: entryDate,
+        category: 'General',
+        caption: entry.note ? entry.note.substring(0, 80) : 'From journal entry',
+        dataUrl: entry.images[i].dataUrl,
+        name: entry.images[i].name || 'journal-photo.jpg',
+        source: 'journal',
+        journalId: jid,
+        addedAt: new Date().toISOString()
+      });
+      existingJIds.add(jid);
     }
   }
 }
@@ -3076,8 +3116,38 @@ function filterGallery(filter, btn) {
   renderGallery();
 }
 
+async function syncPhotosFromCloud() {
+  try {
+    const existing = await getAllGalleryPhotos();
+    const existingJIds = new Set(existing.map(p => p.journalId).filter(Boolean));
+    const res = await fetch(SUPABASE_URL + '/rest/v1/journal_photos?select=*', {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+    });
+    if (!res.ok) return; // best-effort — don't block the gallery view if this fails
+    const cloudPhotos = await res.json();
+    for (const p of cloudPhotos) {
+      if (existingJIds.has(p.id) || !p.data_url) continue;
+      await savePhotoToDB({
+        id: Date.now() + Math.random(),
+        date: p.date,
+        category: p.category || 'General',
+        caption: p.caption || '',
+        dataUrl: p.data_url,
+        name: p.name || 'photo.jpg',
+        source: p.source || 'journal',
+        journalId: p.id,
+        addedAt: p.added_at || new Date().toISOString()
+      });
+      existingJIds.add(p.id);
+    }
+  } catch (err) {
+    console.error('Photo cloud recovery failed (non-critical):', err);
+  }
+}
+
 async function renderGallery() {
   await syncJournalPhotos();
+  await syncPhotosFromCloud();
   let photos = await getAllGalleryPhotos();
 
   if (galleryFilter !== 'all') {
@@ -3121,7 +3191,15 @@ async function renderGallery() {
 
 async function deleteGalleryPhoto(id) {
   if (!confirm('Remove this photo?')) return;
+  const all = await getAllGalleryPhotos();
+  const photo = all.find(p => p.id === id);
   await deletePhotoFromDB(id);
+  if (photo && photo.journalId) {
+    fetch(SUPABASE_URL + '/rest/v1/journal_photos?id=eq.' + encodeURIComponent(photo.journalId), {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+    }).catch(err => console.error('Cloud photo delete failed (non-critical):', err));
+  }
   renderGallery();
 }
 
